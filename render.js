@@ -39,7 +39,12 @@ document.body.appendChild(hudElement);
 
 var helpEl = makeDiv(563, 500, document.body);
 helpEl.style.fontWeight = 'bold';
+helpEl.style.whiteSpace = 'nowrap';
+
 var actionEl = makeDiv(563, 528, document.body);
+actionEl.id = 'action';
+actionEl.style.whiteSpace = 'nowrap';
+
 var logEl = makeDiv(5, 1920, document.body);
 
 //UI that pops up temporarily sometimes
@@ -94,7 +99,8 @@ var lastLogLine = '';
 var logUpsideDown = false;
 var logColored = false; //coloredlog
 
-function addLog(text) {
+function addLog() {
+  var text = Array.prototype.join.call(arguments, '<br/>');
   if(logUpsideDown) logText = text + '<br/>' + logText;
   else logText += '<br/>' + text;
   lastLogLine = text;
@@ -965,7 +971,7 @@ function drawSummary(px, py, playerIndex) {
     if(player.index == state.startPlayer) name += ' [S]';
     playerText += makeHtmlTextWithColors(name, fgcolor, bgcolor) + ' ';
   }
-  makeText(px + 60, py, playerText, parent).style.width = '1000px'; //prevetn wrap
+  makeText(px + 60, py, playerText, parent).style.whiteSpace = 'nowrap'; //prevetn wrap
 
 
   /*makeText(px, py + 16, 'Taken: ', parent).title = 'list of octogon-actions taken this round. Includes the faction specific actions of other players';
