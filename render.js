@@ -100,7 +100,7 @@ var logUpsideDown = false;
 var logColored = false; //coloredlog
 
 function addLog() {
-  var text = Array.prototype.join.call(arguments, '<br>')
+  var text = Array.prototype.join.call(arguments, '<br/>');
   if(logUpsideDown) logText = text + '<br/>' + logText;
   else logText += '<br/>' + text;
   lastLogLine = text;
