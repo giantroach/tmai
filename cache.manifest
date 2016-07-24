@@ -1,8 +1,6 @@
 CACHE MANIFEST
 # 2016-07-24
 
-# Explicitly cached 'master entries'.
-CACHE:
 index.html
 util.js?v=20160316
 enums.js?v=20160316
@@ -25,5 +23,5 @@ save.js?v=20160316
 unittest.js?v=20160316
 fireice.js?v=20160316
 
-tiles.png
+tiles.png?v=20160316
 iepixel.gif
