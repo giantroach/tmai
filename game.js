@@ -128,6 +128,7 @@ function initParams(params) {
   state.louAI = params.louAI;
   state.fireiceerrata = params.fireiceerrata;
   state.roundtilepromo2015 = params.roundtilepromo2015;
+  state.autosave = params.autosave;
 
   var finalscoring = params.finalscoring;
   if(finalscoring == -1) {
@@ -178,6 +179,7 @@ function initialGameLogMessage() {
   if(state.louAI) addLog('Lou New\'s AI enabled');
   if(state.fireiceerrata) addLog('fire & ice errata enabled');
   if(state.roundtilepromo2015) addLog('round tile promo 2015 enabled');
+  if(state.autosave) addLog('auto save enabled');
 
   addLog('round 1 tile: ' + tileToStringLong(game.roundtiles[1], true));
   addLog('round 2 tile: ' + tileToStringLong(game.roundtiles[2], true));

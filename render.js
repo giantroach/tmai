@@ -1046,6 +1046,7 @@ function drawHumanUI(px, py, playerIndex) {
     buttonFastest.onclick = fastestButtonFun;
   }
   else if(state.type == S_ACTION && humanstate == HS_MAIN && player.human) {
+    autoSave(game, state, logText);
     drawPlayerActions(px, py, playerIndex, parent);
   } else {
     var cx = ACTIONPANELX + ACTIONPANELW / 2;
@@ -1701,6 +1702,7 @@ function drawSaveLoadUI(onlyload) {
 
 function resetAndBeginNewGame() {
   clearHumanState();
+  clearAutoSave();
   state.type = S_PRE;
   fastestMode = false;
   fastMode = false;
