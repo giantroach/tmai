@@ -69,6 +69,29 @@ function loadGameStateHard(game) {
   gameLoopNonBlocking(state.type, false); //this is an alternative rather than doing state.executeActor() above, but requires player to press "Next"
 }
 
+//Auto save and load
+function autoSave(game, state, logText) {
+  localStorage['autoSaveData'] = serializeGameState(saveGameState(game, state, logText));
+}
+
+function autoLoad() {
+  if(localStorage['autoSaveData']) {
+    var game = deSerializeGameState(localStorage['autoSaveData']);
+    if(game) {
+      loadGameStateHard(game);
+      if(!game.logText) addLog('<br/>Loaded a game without log<br/>');
+    }
+    return true;
+  }
+  return false;
+}
+
+function clearAutoSave() {
+  if(localStorage['autoSaveData']) {
+    delete localStorage.autoSaveData;
+  }
+}
+
 //returns it as a string
 function serializeGameState(fromgame) {
   var result = '';
@@ -195,6 +218,7 @@ function serializeGameState(fromgame) {
   if(state.fireice) { if(comma) result += ','; result += 'fireice'; comma = true; }
   if(state.fireiceerrata) { if(comma) result += ','; result += 'fireiceerrata'; comma = true; }
   if(state.roundtilepromo2015) { if(comma) result += ','; result += 'roundtilepromo2015'; comma = true; }
+  if(state.autoSave) { if(comma) result += ','; result += 'autoSave'; comma = true; }
   result += '\n';
 
   result += '\nrules:\n';
@@ -551,6 +575,7 @@ function deSerializeGameStateNewFormat(text) {
     result.state.fireice = stringContains(s, 'fireice');
     result.state.fireiceerrata = stringContains(s, 'fireiceerrata');
     result.state.roundtilepromo2015 = stringContains(s, 'roundtilepromo2015');
+    result.state.autoSave = stringContains(s, 'autoSave');
   }
 
   s = parseLabelPart(text, 'rules:');

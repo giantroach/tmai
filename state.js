@@ -600,8 +600,11 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   state.next_type = S_NONE;
   callbackState = CS_EXECUTE;
   if(this.type == S_PRE) {
-    renderPreScreen(200, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
-    //transitionIfNoActorCallback();
+    // load game if auto save
+    if(!(preferences.autosave && autoLoad())) {
+      renderPreScreen(200, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
+      //transitionIfNoActorCallback();
+    }
   }
   else if(this.type == S_INIT_FACTION) {
     this.numHandledForState++;

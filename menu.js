@@ -101,6 +101,9 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
   var roundtilepromo2015cb = makeCheckbox(px + 160, ppy + 89, parent, 'Round tile promo 2015', 'Enable the new round tile (4VP for temple, 2C per cult priest) from the official 2015 mini expansion');
   roundtilepromo2015cb.checked = preferences.roundtilepromo2015;
 
+  var autosavecb = makeCheckbox(px + 350, ppy + 89, parent, 'Enable auto save', 'Enable auto save');
+  autosavecb.checked = preferences.autosave;
+
   ppy += 160;
   makeText(px, ppy, 'Preset* factions', parent).title = 'Override faction choice. Set to "choose" to choose the faction during the game according to normal game rules. Set to "random" to assign a random faction. Set to a given faction to assign that faction to this player';
   var factionDropDowns = [];
@@ -204,6 +207,7 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     params.louAI = louAIcb.checked;
     params.fireiceerrata = fireiceerratacb.checked;
     params.roundtilepromo2015 = roundtilepromo2015cb.checked;
+    params.autosave = autosavecb.checked;
 
     preferences.newcultistsrule = newcultistcb.checked;
     preferences.towntilepromo2013 = towntilepromo2013cb.checked;
@@ -213,6 +217,7 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     preferences.louAI = louAIcb.checked;
     preferences.fireiceerrata = fireiceerratacb.checked;
     preferences.roundtilepromo2015 = roundtilepromo2015cb.checked;
+    preferences.autosave = autosavecb.checked;
 
     preferences.gametypedropdown = gameTypeDropDown.selectedIndex;
     preferences.playertypedropdown = (playerTypeDropDown.checked ? 1 : 0);
@@ -362,6 +367,7 @@ var preferences = {
   louAI: false,
   fireiceerrata: true,
   roundtilepromo2015: true,
+  autosave: false,
 };
 
 function assignPreferenceToDropdown(dropdown, value) {
@@ -393,6 +399,7 @@ function setLocalStorage() {
   localStorage['louAI'] = preferences.louAI;
   localStorage['fireiceerrata'] = preferences.fireiceerrata;
   localStorage['roundtilepromo2015'] = preferences.roundtilepromo2015;
+  localStorage['autosave'] = preferences.autosave;
 }
 
 //no longer a cookie, but html5 local storage
@@ -420,6 +427,7 @@ function getLocalStorage() {
   if(localStorage['louAI'] != undefined) preferences.louAI = localStorage['louAI'] == 'true';
   if(localStorage['fireiceerrata'] != undefined) preferences.fireiceerrata = localStorage['fireiceerrata'] == 'true';
   if(localStorage['roundtilepromo2015'] != undefined) preferences.roundtilepromo2015 = localStorage['roundtilepromo2015'] == 'true';
+  if(localStorage['autosave'] != undefined) preferences.autosave = localStorage['autosave'] == 'true';
 }
 
 window.onbeforeunload = setLocalStorage;
