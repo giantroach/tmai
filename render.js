@@ -897,7 +897,10 @@ function drawHud2(players, onTileClickMain) {
 
   drawCultTracks(/*840*/ 5 + game.bw * 64, 40);
   drawHumanUI(563, 570, state.showResourcesPlayer);
-  if(state.type == S_GAME_OVER) drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
+  if(state.type == S_GAME_OVER) {
+    autoSave(game, state, logText);
+    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
+  }
 }
 
 function drawEndGameScoring(px, py) {
