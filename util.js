@@ -233,6 +233,7 @@ function makeDiv(px, py, parent) {
 function makeText(px, py, text, parent) {
   var el = makeAbsElement(px, py, parent, 'div');
   el.innerHTML = text;
+  el.style.whiteSpace = 'nowrap';
   return el;
 }
 
@@ -260,6 +261,7 @@ function makeLinkButton(px, py, text, parent) {
   el.style.whiteSpace = 'nowrap';
   el.style.color = '#0000aa';
   el.style.cursor = 'pointer';
+  el.style.whiteSpace = 'nowrap';
   el.innerHTML = text;
   return el;
 }
