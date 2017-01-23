@@ -26,25 +26,40 @@ freely, subject to the following restrictions:
 //Everything related to drawing and UI
 
 var mapElement = makeSizedDiv(0, 40, 820, 442, document.body);
+mapElement.id = 'map';
 document.body.appendChild(mapElement);
 
 //UI that never changes
 var uiElement =  document.createElement('div');
+uiElement.id = 'ui';
 document.body.appendChild(uiElement);
 
 //UI that gets redrawn all the time
 var hudElement =  document.createElement('div');
+hudElement.id = 'hud';
 document.body.appendChild(hudElement);
 
 
 var helpEl = makeDiv(563, 500, document.body);
+helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
 var actionEl = makeDiv(563, 528, document.body);
 var logEl = makeDiv(5, 1920, document.body);
+logEl.id = 'log';
 
 //UI that pops up temporarily sometimes
 var popupElement =  document.createElement('div');
+popupElement.id = 'popup';
 document.body.appendChild(popupElement);
+
+//sub element under hud like tiles
+var hudSubElement = function (id) {
+  var el = document.getElementById(id);
+  if (el) { return el; }
+  el = makeElement(hudElement, 'div');
+  el.id = id;
+  return el
+}
 
 function showGreyDialog(text, px, py) {
   if(!px) px = 400;
@@ -163,8 +178,8 @@ function drawIcon(px, py, symbol, color, parent) {
 }
 
 //draw a small player color token somewhere
-function drawOrb(px, py, color) {
-  return drawIcon(px, py + 64/3 - 64/2, 9, color, hudElement);
+function drawOrb(px, py, color, parent) {
+  return drawIcon(px, py + 64/3 - 64/2, 9, color, parent);
 }
 
 function drawGridSymbol(x, y, text) {
@@ -343,34 +358,35 @@ function getCultColor(cult) {
 function drawCultTracks(px, py) {
   var trackwidth = 60;
   var trackheight = 450;
+  var container = hudSubElement('cult');
 
   function drawTrack(x, y, cult) {
     var color = getCultColor(cult);
-    var track = makeSizedDiv(x, y, trackwidth, trackheight - 30, hudElement);
+    var track = makeSizedDiv(x, y, trackwidth, trackheight - 30, container);
     track.style.backgroundColor = color;
     track.style.borderRadius = '5px';
-    var bottom = makeSizedDiv(x, y + trackheight - 30, trackwidth, 30, hudElement);
+    var bottom = makeSizedDiv(x, y + trackheight - 30, trackwidth, 30, container);
     bottom.style.backgroundColor = '#777';
     bottom.style.borderRadius = '5px';
     for(var i = 0; i < 11; i++) {
-      var text = makeDiv(x + trackwidth / 2 - 8, y + Math.floor(trackheight * (i + 0.5) / 12), hudElement);
+      var text = makeDiv(x + trackwidth / 2 - 8, y + Math.floor(trackheight * (i + 0.5) / 12), container);
       text.innerHTML = 10 - i;
     }
     for(var i = 0; i < game.players.length; i++) {
       var player = game.players[i];
       if(player.color == I || player.color == N) continue;
       var num = player.cult[cult];
-      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), 7 + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor);
+      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), 7 + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor, container);
     }
     for(var i = 0; i < 4; i++) {
       var x2 = x + 5 + Math.floor(5 + i * trackwidth / 5);
       var y2 = y + Math.floor(trackheight * 11.5 / 12);
-      var text = makeDiv(x2, y2, hudElement);
+      var text = makeDiv(x2, y2, container);
       text.innerHTML = i == 0 ? 3 : 2;
-      if(game.cultp[cult][i] != N) drawOrb(x2 + 4, y2 + 6, game.cultp[cult][i]);
+      if(game.cultp[cult][i] != N) drawOrb(x2 + 4, y2 + 6, game.cultp[cult][i], container);
     }
 
-    var ui = makeSameSizeDiv(track, hudElement);
+    var ui = makeSameSizeDiv(track, container);
     ui.style.height = trackheight;
     ui.style.cursor = 'pointer';
     ui.onclick = bind(function(cult) {
@@ -385,7 +401,7 @@ function drawCultTracks(px, py) {
   }
 
   function drawVLine(x, y, width, color) {
-    var el = makeSizedDiv(x, y, width, 1, hudElement)
+    var el = makeSizedDiv(x, y, width, 1, container);
     el.style.backgroundColor = color;
     el.style.fontSize = '0%'; //IE refuses to make a div smaller than fontsize so set fontsize small
   }
@@ -406,18 +422,19 @@ function drawCultTracks(px, py) {
 }
 
 function renderTownTile(px, py, tile, vp, text, onTileClick) {
-  var el = makeDiv(px, py, hudElement);
+  var container = hudSubElement('town');
+  var el = makeDiv(px, py, container);
   el.style.border = '1px solid #ff8822';
   el.style.width = 45;
   el.style.height = 45;
   el.style.backgroundColor = '#888888';
-  var text1el = makeDiv(px + 5, py + 5, hudElement);
+  var text1el = makeDiv(px + 5, py + 5, container);
   text1el.innerHTML = vp + 'vp';
-  var text2el = makeDiv(px + 5, py + 25, hudElement);
+  var text2el = makeDiv(px + 5, py + 25, container);
   text2el.innerHTML = text;
 
   if(onTileClick) {
-    var elui = makeSameSizeDiv(el, hudElement);
+    var elui = makeSameSizeDiv(el, container);
     elui.style.cursor = 'pointer';
     elui.onclick = function() {
       onTileClick(tile);
@@ -444,21 +461,22 @@ function drawTownTile(px, py, tile, onTileClick) {
 }
 
 function renderBonusTile(px, py, tile, text1, text2, text3, onTileClick) {
-  var el = makeDiv(px, py, hudElement);
+  var container = hudSubElement('bonus');
+  var el = makeDiv(px, py, container);
   el.style.border = '1px solid #55a';
   el.style.width = 47;
   el.style.height = 62;
   el.style.backgroundColor = '#ffeebb';
-  var text1el = makeDiv(px + 2, py + 5, hudElement);
+  var text1el = makeDiv(px + 2, py + 5, container);
   text1el.innerHTML = text1;
-  var text2el = makeDiv(px + 2, py + 21, hudElement);
+  var text2el = makeDiv(px + 2, py + 21, container);
   text2el.innerHTML = text2;
-  var text3el = makeDiv(px + 2, py + 37, hudElement);
+  var text3el = makeDiv(px + 2, py + 37, container);
   text3el.innerHTML = text3;
-  if (game.bonustilecoins[tile]) makeText(px, py-12, '+' + game.bonustilecoins[tile] + 'c', hudElement);
+  if (game.bonustilecoins[tile]) makeText(px, py-12, '+' + game.bonustilecoins[tile] + 'c', container);
 
   if(onTileClick) {
-    var elui = makeSameSizeDiv(el, hudElement);
+    var elui = makeSameSizeDiv(el, container);
     elui.style.cursor = 'pointer';
     elui.onclick = function() {
       onTileClick(tile);
@@ -488,7 +506,8 @@ function drawBonusTile(px, py, tile, onTileClick) {
 }
 
 function renderFavorTile(px, py, tile, cult, num, text1, text2, onTileClick) {
-  var el = makeDiv(px, py, hudElement);
+  var container = hudSubElement('favor');
+  var el = makeDiv(px, py, container);
   el.style.border = '1px solid #aaa';
   el.style.width = 70;
   el.style.height = 60;
@@ -496,17 +515,17 @@ function renderFavorTile(px, py, tile, cult, num, text1, text2, onTileClick) {
   el.style.borderRadius = '12px';
   var cultcolor = getCultColor(cult);
   var culttext = num == 1 ? 'o' : num == 2 ? 'oo' : 'ooo';
-  var text1el = makeDiv(px + 5, py + 5, hudElement);
+  var text1el = makeDiv(px + 5, py + 5, container);
   text1el.style.color = 'black';
   text1el.style.backgroundColor = cultcolor;
   text1el.innerHTML = culttext;
-  var text2el = makeDiv(px + 5, py + 25, hudElement);
+  var text2el = makeDiv(px + 5, py + 25, container);
   text2el.innerHTML = text1;
-  var text3el = makeDiv(px + 5, py + 40, hudElement);
+  var text3el = makeDiv(px + 5, py + 40, container);
   text3el.innerHTML = text2;
 
   if(onTileClick) {
-    var elui = makeSameSizeDiv(el, hudElement);
+    var elui = makeSameSizeDiv(el, container);
     elui.style.cursor = 'pointer';
     elui.onclick = function() {
       onTileClick(tile);
@@ -539,7 +558,8 @@ function drawFavorTile(px, py, tile, onTileClick) {
 }
 
 function renderRoundTile(px, py, tile, cult, num, text1, text2, index) {
-  var el = makeDiv(px, py, hudElement);
+  var container = hudSubElement('round')
+  var el = makeDiv(px, py, container);
   el.style.border = '1px solid black';
   el.style.width = 70;
   el.style.height = 60;
@@ -549,21 +569,21 @@ function renderRoundTile(px, py, tile, cult, num, text1, text2, index) {
 
   el.title = tileToHelpString(tile, true);
 
-  var text2el = makeDiv(px + 5, py + 5, hudElement);
+  var text2el = makeDiv(px + 5, py + 5, container);
   text2el.innerHTML = text1;
 
   if(index != 6) {
     var cultcolor = getCultColor(cult);
     var culttext = num == 1 ? 'o' : num == 2 ? 'oo' : num == 3 ? 'ooo' : 'oooo';
-    var text1el = makeDiv(px + 5, py + 25, hudElement);
+    var text1el = makeDiv(px + 5, py + 25, container);
     text1el.style.color = 'black';
     text1el.style.backgroundColor = cultcolor;
     text1el.innerHTML = culttext;
-    var text3el = makeDiv(px + 5, py + 40, hudElement);
+    var text3el = makeDiv(px + 5, py + 40, container);
     text3el.innerHTML = text2;
   }
 
-  var text4el = makeDiv(px + 1, py - 12, hudElement);
+  var text4el = makeDiv(px + 1, py - 12, container);
   text4el.innerHTML = 'round ' + index;
 
   return [71, 61];
@@ -599,13 +619,14 @@ function drawTile(px, py, tile, onTileClick, index) {
 
 //returns draw width
 //ui: whether it's the clickable ones that need ui click elements on them
-function drawTilesMap(px, py, tiles, maxWidth, startX, onTileClick) {
+function drawTilesMap(parent, px, py, tiles, maxWidth, startX, onTileClick) {
   var px2 = 0;
   var py2 = 0;
   var i = 0;
   for (var tile in tiles) {
     if (tiles.hasOwnProperty(tile) && tiles[tile] > 0) {
-      if (tiles[tile] > 1) makeText(px + px2, py + py2 - 12, tiles[tile] + 'x', hudElement);
+      // FIXME: I'd like to avoid passing parent here
+      if (tiles[tile] > 1) makeText(px + px2, py + py2 - 12, tiles[tile] + 'x', parent);
       var size = drawTile(px + px2, py + py2, tile, onTileClick, i);
       if(px2 + size[0] + 5 > maxWidth) {
         px2 = (startX - px);
@@ -635,26 +656,27 @@ function drawTilesArray(px, py, tiles, maxWidth, startX, onTileClick) {
 }
 
 function renderFinalScoringTile(px, py, text1, text2, text3, text4, text5, text6, title) {
-  var el = makeDiv(px, py, hudElement);
+  var container = hudSubElement('final');
+  var el = makeDiv(px, py, container);
   el.style.border = '1px solid black';
   el.style.width = 80;
   el.style.height = 70;
   el.style.backgroundColor = '#fff';
 
-  var text1el = makeDiv(px + 2, py + 0, hudElement);
+  var text1el = makeDiv(px + 2, py + 0, container);
   text1el.innerHTML = '<b>' + text1 + '</b>';
-  var text2el = makeDiv(px + 2, py + 10, hudElement);
+  var text2el = makeDiv(px + 2, py + 10, container);
   text2el.innerHTML = text2;
-  var text3el = makeDiv(px + 2, py + 22, hudElement);
+  var text3el = makeDiv(px + 2, py + 22, container);
   text3el.innerHTML = '<b>' + text3 + '</b>';
-  var text4el = makeDiv(px + 2, py + 32, hudElement);
+  var text4el = makeDiv(px + 2, py + 32, container);
   text4el.innerHTML = text4;
-  var text5el = makeDiv(px + 2, py + 44, hudElement);
+  var text5el = makeDiv(px + 2, py + 44, container);
   text5el.innerHTML = '<b>' + text5 + '</b>';
-  var text6el = makeDiv(px + 2, py + 56, hudElement);
+  var text6el = makeDiv(px + 2, py + 56, container);
   text6el.innerHTML = text6;
 
-  var text0el = makeDiv(px - 1, py - 12, hudElement);
+  var text0el = makeDiv(px - 1, py - 12, container);
   text0el.innerHTML = 'Final Scoring';
 
   el.title = title;
@@ -750,37 +772,38 @@ function getPlayerResourcesString(player, markup) {
 }
 
 function drawPlayerPanel(px, py, player, scoreProjection) {
-  var bg = makeSizedDiv(px - 5, py - 5, 1073, 185, hudElement)
+  var container = hudSubElement('player-' + getFullName(player));
+  var bg = makeSizedDiv(px - 5, py - 5, 1073, 185, container)
   bg.style.border = player.index == state.currentPlayer ? '2px solid black' : '1px solid black';
   bg.style.backgroundColor = '#fff0e0';
 
   function drawDigCircle(px, py) {
     if(player.color == Z) {
       var colors = player.colors;
-      if(colors[S - R]) drawOrb(px + 0, py + 39 - 0, S);
-      if(colors[G - R]) drawOrb(px + 16, py + 39 - 8, G);
-      if(colors[R - R]) drawOrb(px - 16, py + 39 - 8, R);
-      if(colors[B - R]) drawOrb(px + 20, py + 39 - 25, B);
-      if(colors[Y - R]) drawOrb(px - 20, py + 39 - 25, Y);
-      if(colors[K - R]) drawOrb(px + 9, py + 39 - 39, K);
-      if(colors[U - R]) drawOrb(px - 9, py + 39 - 39, U);
+      if(colors[S - R]) drawOrb(px + 0, py + 39 - 0, S, container);
+      if(colors[G - R]) drawOrb(px + 16, py + 39 - 8, G, container);
+      if(colors[R - R]) drawOrb(px - 16, py + 39 - 8, R, container);
+      if(colors[B - R]) drawOrb(px + 20, py + 39 - 25, B, container);
+      if(colors[Y - R]) drawOrb(px - 20, py + 39 - 25, Y, container);
+      if(colors[K - R]) drawOrb(px + 9, py + 39 - 39, K, container);
+      if(colors[U - R]) drawOrb(px - 9, py + 39 - 39, U, container);
     } else {
       var num = CIRCLE_END - CIRCLE_BEGIN + 1;
       var b = CIRCLE_BEGIN;
       var color = player.auxcolor;
       if(!(color >= CIRCLE_BEGIN && color <= CIRCLE_END)) color = player.woodcolor;
       if(!(color >= CIRCLE_BEGIN && color <= CIRCLE_END)) return;
-      drawOrb(px + 0, py + 0, color);
-      drawOrb(px + 16, py + 8, b + (color + 1 - b) % num);
-      drawOrb(px + -16, py + 8, b + (color + 6 - b) % num);
-      drawOrb(px + 20, py + 25, b + (color + 2 - b) % num);
-      drawOrb(px + -20, py + 25, b + (color + 5 - b) % num);
-      drawOrb(px + 9, py + 39, b + (color + 3 - b) % num);
-      drawOrb(px + -9, py + 39, b + (color + 4 - b) % num);
+      drawOrb(px + 0, py + 0, color, container);
+      drawOrb(px + 16, py + 8, b + (color + 1 - b) % num, container);
+      drawOrb(px + -16, py + 8, b + (color + 6 - b) % num, container);
+      drawOrb(px + 20, py + 25, b + (color + 2 - b) % num, container);
+      drawOrb(px + -20, py + 25, b + (color + 5 - b) % num, container);
+      drawOrb(px + 9, py + 39, b + (color + 3 - b) % num, container);
+      drawOrb(px + -9, py + 39, b + (color + 4 - b) % num, container);
     }
   }
   var name = getFullName(player);
-  var playertext = makeText(px, py, name, hudElement);
+  var playertext = makeText(px, py, name, container);
   var imColor = getImageColor(player.woodcolor);
   if(player.passed) {
     playertext.style.backgroundColor = getTranslucentColor(imColor, 64);
@@ -791,7 +814,7 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
   }
 
 
-  var vptext = makeText(px, py + 15, 'VP: ' + player.vp, hudElement);
+  var vptext = makeText(px, py + 15, 'VP: ' + player.vp, container);
   vptext.title = getFullVPDetailsText(player);
   vptext.onclick = bind(showGreyDialogAtMouse, getFullVPDetailsText(player));
   vptext.style.cursor = 'pointer';
@@ -800,43 +823,43 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
   if(player.passed && player.index == state.startPlayer) passedtext += 'passed, start';
   else if(player.passed) passedtext += 'passed';
   else if(player.index == state.startPlayer) passedtext += 'start';
-  makeText(name.length > 18 ? px + 170 : px + 130, py , passedtext, hudElement);
-  makeText(px, py + 30, 'res: <b>' + getPlayerResourcesString(player, true) + '</b>', hudElement);
+  makeText(name.length > 18 ? px + 170 : px + 130, py , passedtext, container);
+  makeText(px, py + 30, 'res: <b>' + getPlayerResourcesString(player, true) + '</b>', container);
 
   makeText(px, py + 45, 'D: <b>' + dangerColor(player.b_d == 0, built_d(player) + '/8</b>') + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_D, false)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_D)), hudElement);
+      ' next: ' + costToString(getIncomeForNextBuilding(player, B_D)), container);
   makeText(px, py + 60, 'TP: <b>' + dangerColor(player.b_tp == 0, built_tp(player) + '/4</b>') + ' cost: ' +
       costAlternativesToString(player.getFaction().getBuildingCost(B_TP, true), player.getFaction().getBuildingCost(B_TP, false)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TP)), hudElement);
+      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TP)), container);
   makeText(px, py + 75, 'TE: <b>' + dangerColor(player.b_te == 0, built_te(player) + '/3</b>') + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_TE, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TE)), hudElement);
+      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TE)), container);
   makeText(px, py + 90, 'SH: <b>' + built_sh(player) + '/1</b> cost: ' + costToString(player.getFaction().getBuildingCost(B_SH, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SH)), hudElement);
+      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SH)), container);
   makeText(px, py + 105, 'SA: <b>' + built_sa(player) + '/1</b> cost: ' + costToString(player.getFaction().getBuildingCost(B_SA, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SA)), hudElement);
+      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SA)), container);
 
 
-  if(player.maxdigging > 0) makeText(px, py + 120, 'digging: <b>' + player.digging + '</b> (' + player.digging + '/' + player.maxdigging + ') advcost: ' + costToString(player.getActionCost(A_ADV_DIG)), hudElement);
-  else if(player.maxdigging == 0) makeText(px, py + 120, 'digging: 0/0', hudElement);
-  else makeText(px, py + 120, 'digging: N/A', hudElement);
-  if(player.maxshipping > 0) makeText(px, py + 135, 'shipping: <b>' + getShipping(player, false) + '</b> (' + player.shipping + '/' + player.maxshipping + (player.bonusshipping ? ' + ' + player.bonusshipping : '') + ') advcost: ' + costToString(player.getActionCost(A_ADV_SHIP)), hudElement);
-  else if(player.maxtunnelcarpetdistance > 0) makeText(px, py + 135, 'range: <b>' + player.tunnelcarpetdistance + '/' + player.maxtunnelcarpetdistance, hudElement);
-  else if(player.maxshipping == 0) makeText(px, py + 135, 'shipping: 0/0', hudElement);
-  else makeText(px, py + 135, 'shipping: N/A', hudElement);
+  if(player.maxdigging > 0) makeText(px, py + 120, 'digging: <b>' + player.digging + '</b> (' + player.digging + '/' + player.maxdigging + ') advcost: ' + costToString(player.getActionCost(A_ADV_DIG)), container);
+  else if(player.maxdigging == 0) makeText(px, py + 120, 'digging: 0/0', container);
+  else makeText(px, py + 120, 'digging: N/A', container);
+  if(player.maxshipping > 0) makeText(px, py + 135, 'shipping: <b>' + getShipping(player, false) + '</b> (' + player.shipping + '/' + player.maxshipping + (player.bonusshipping ? ' + ' + player.bonusshipping : '') + ') advcost: ' + costToString(player.getActionCost(A_ADV_SHIP)), container);
+  else if(player.maxtunnelcarpetdistance > 0) makeText(px, py + 135, 'range: <b>' + player.tunnelcarpetdistance + '/' + player.maxtunnelcarpetdistance, container);
+  else if(player.maxshipping == 0) makeText(px, py + 135, 'shipping: 0/0', container);
+  else makeText(px, py + 135, 'shipping: N/A', container);
 
   if(state.round == 6 && state.type != S_GAME_OVER) {
     var p = scoreProjection[player.index];
-    makeText(px, py + 150, 'projected end vp: <b>' + p[0] + '</b> (current: ' + player.vp + ', cult: ' + p[1] + ', netw: ' + p[2] + ', fin: ' + p[3] + ', res: ' + p[4] + ', pass: ' + p[5] + ')', hudElement);
+    makeText(px, py + 150, 'projected end vp: <b>' + p[0] + '</b> (current: ' + player.vp + ', cult: ' + p[1] + ', netw: ' + p[2] + ', fin: ' + p[3] + ', res: ' + p[4] + ', pass: ' + p[5] + ')', container);
   } else {
     var income = getIncome(player, player.passed /*display bonus tile income only when passed*/, state.round);
     var dangerp = income[2] > player.pp - player.p;
     var dangerpw = income[3] > player.pw0 * 2 + player.pw1;
 
     makeText(px, py + 150, 'income: <B>' + income[0] + 'c, ' + income[1] + 'w, ' +
-        dangerColor(dangerp, income[2] + 'p') + ', ' + dangerColor(dangerpw, income[3] + 'pw</b>'), hudElement);
+        dangerColor(dangerp, income[2] + 'p') + ', ' + dangerColor(dangerpw, income[3] + 'pw</b>'), container);
   }
 
-  makeText(px, py + 165, 'octogons: ', hudElement).title = 'the actions with an action token this player has exclusive access to (striked through when already used this round)';
+  makeText(px, py + 165, 'octogons: ', container).title = 'the actions with an action token this player has exclusive access to (striked through when already used this round)';
   var actionsText = '';
   function addActionText(octogon) {
     var name = getActionName(octogon);
@@ -854,7 +877,7 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
     if(player.faction == F_AUREN) addActionText(A_AUREN_CULT);
     if(player.faction == F_WITCHES) addActionText(A_WITCHES_D);
   }
-  makeText(px + 70, py + 165, actionsText, hudElement);
+  makeText(px + 70, py + 165, actionsText, container);
 
   if(player.color != I && player.color != N) drawDigCircle(px + 280, py + 20);
 
@@ -865,15 +888,15 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
   var py2 = 0;
   var co;
 
-  co = drawTilesMap(px + 320 + px2, py + 10 + py2, bonustiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('bonus'), px + 320 + px2, py + 10 + py2, bonustiles, 600 - px2, px + 320, null);
   px2 += co[0] + 5;
   if(co[1] != 0 && py2 == 0) { py2 = 80; }
 
-  co = drawTilesMap(px + 320 + px2, py + 10 + py2, player.favortiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('favor'), px + 320 + px2, py + 10 + py2, player.favortiles, 600 - px2, px + 320, null);
   px2 += co[0] + 5;
   if(co[1] != 0 && py2 == 0) { py2 = 80;}
 
-  co = drawTilesMap(px + 320 + px2, py + 10 + py2, player.towntiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('town'), px + 320 + px2, py + 10 + py2, player.towntiles, 600 - px2, px + 320, null);
 }
 
 //if onTileClick not null, added as onclick for the tile elements. Gets the tile as argument.
@@ -884,9 +907,9 @@ function drawHud2(players, onTileClickMain) {
   for(var i = 0; i < players.length; i++) drawPlayerPanel(10, 900 + 205 * i, players[i], scoreProjection);
 
   drawTilesArray(5, 520, game.roundtiles, 500, 5, onTileClickMain);
-  drawTilesMap(5, 595, game.bonustiles, 500, 5, onTileClickMain);
-  drawTilesMap(5, 675, game.towntiles, 500, 5, onTileClickMain);
-  drawTilesMap(5, 735, game.favortiles, 450, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('bonus'), 5, 595, game.bonustiles, 500, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('town'), 5, 675, game.towntiles, 500, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('favor'), 5, 735, game.favortiles, 450, 5, onTileClickMain);
   drawFinalScoringTile(462, 520, game.finalscoring);
 
   drawCultTracks(/*840*/ 5 + game.bw * 64, 40);
@@ -895,7 +918,7 @@ function drawHud2(players, onTileClickMain) {
 }
 
 function drawEndGameScoring(px, py) {
-  var parent = hudElement;
+  var parent = hudSubElement('score');
 
   var bg = makeSizedDiv(px, py, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.backgroundColor = '#ffffff';
@@ -937,7 +960,8 @@ function makeHtmlTextWithColors(text, fgcolor, bgcolor) {
 
 //summary near the actions panel so that you don't have to look at other parts of the screen to see your resources etc...
 function drawSummary(px, py, playerIndex) {
-  var div = makeSizedDiv(px - 5, py, 520 + 5, 90, hudElement);
+  var container = hudSubElement('summary');
+  var div = makeSizedDiv(px - 5, py, 520 + 5, 90, container);
   div.style.backgroundColor = getLighterColor(getImageColor(game.players[playerIndex].woodcolor), 32);
   div.style.overflow = 'visible';
   try { div.style.whiteSpace = 'no-wrap'; } catch(e) { /*IE8*/};
@@ -1024,7 +1048,7 @@ var ACTIONPANELW = 0;
 var ACTIONPANELH = 0;
 
 function drawHumanUI(px, py, playerIndex) {
-  var parent = hudElement;
+  var parent = hudSubElement('human-ui');
   var player = game.players[playerIndex];
 
   ACTIONPANELX = px - 5;
@@ -1034,14 +1058,14 @@ function drawHumanUI(px, py, playerIndex) {
   var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent).style.border = '1px solid black';
 
   if(showingNextButtonPanel) {
-    var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, hudElement);
+    var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
     bg.style.backgroundColor = 'white';
     bg.style.border = '1px solid black';
     var cx = ACTIONPANELX + ACTIONPANELW / 2;
     var cy = ACTIONPANELY + ACTIONPANELH / 2;
-    var button = makeButton(cx - 105, cy - 16, 'Next', hudElement, nextButtonFun, 'Next player');
-    var buttonFast = makeButton(cx + 5, cy - 16, 'Fast', hudElement, fastButtonFun, 'Go fast: all AI players take their action without interruption until it\'s your turn again.');
-    var buttonFastest = makeLinkButton(ACTIONPANELX + ACTIONPANELW - 60, ACTIONPANELY + ACTIONPANELH - 16, 'Fastest', hudElement);
+    var button = makeButton(cx - 105, cy - 16, 'Next', parent, nextButtonFun, 'Next player');
+    var buttonFast = makeButton(cx + 5, cy - 16, 'Fast', parent, fastButtonFun, 'Go fast: all AI players take their action without interruption until it\'s your turn again.');
+    var buttonFastest = makeLinkButton(ACTIONPANELX + ACTIONPANELW - 60, ACTIONPANELY + ACTIONPANELH - 16, 'Fastest', parent);
     buttonFastest.title = 'Makes it go fast forever, never see the Next button again, but never see the AI actions one by one anymore either';
     buttonFastest.onclick = fastestButtonFun;
   }
@@ -1113,10 +1137,10 @@ function drawHumanUI(px, py, playerIndex) {
       makeText(px, py + 2, 'click on a cult track, right of the map, to continue', parent);
       //TODO: draw something better to indicate cult
       //makeText(cx - 20, cy, 'cult', parent);
-      drawOrb(cx - 20, cy, R);
-      drawOrb(cx - 5, cy, B);
-      drawOrb(cx + 10, cy, U);
-      drawOrb(cx + 25, cy, S);
+      drawOrb(cx - 20, cy, R, parent);
+      drawOrb(cx - 5, cy, B, parent);
+      drawOrb(cx + 10, cy, U, parent);
+      drawOrb(cx + 25, cy, S, parent);
     }
     else if(humanstate == HS_BONUS_TILE) {
       makeText(px, py + 2, 'click on a bonus tile on the left to continue. An example is shown below.', parent);
@@ -1538,7 +1562,7 @@ function makeCheckbox(x, y, parent, label, title) {
 }
 
 //returns the [bg, labelDiv, button], so you can set colors etc...
-function makeButton(x, y, label, parentEl, clickfun, tooltip) {
+function makeButton(x, y, label, parentEl, clickfun, tooltip, parent) {
   var bg = makeSizedDiv(x, y, 100, 40, parentEl);
   bg.style.backgroundColor = '#d00';
   bg.style.border = '1px solid black';
