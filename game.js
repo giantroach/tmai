@@ -1,4 +1,4 @@
-/*
+/* game15.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -30,7 +30,6 @@ General TODO's:
 -fix loading of snellman games
 -fix rule of double dig action: do not allow to use extra spade in some circumstances
 -refactor bridges? reported to be hard to use for programming AI's
--riverwalker AI sometimes makes error due to wrong color?
 -some AI's like giants make error with bonus digs sometimes??
 */
 
@@ -95,7 +94,14 @@ var Game = function() {
 var game = new Game();
 
 var newAI = function() {
-  return state.louAI ? new AILou() : new AILode();
+  if(state.aiAlgorithm == 0) return new AILode();
+  if(state.aiAlgorithm == 1) return new AILou(1);
+  if(state.aiAlgorithm == 2) return new AILou(2);
+  if(state.aiAlgorithm == 3) return new AILou(3);
+  if(state.aiAlgorithm == 4) return new AIRandom();
+  if(state.aiAlgorithm == 5) return new AILou(5);
+  if(state.aiAlgorithm == 6) return new AILou(6);
+  throw 'unknown AI type';
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,9 +131,10 @@ function initParams(params) {
   state.bonustilepromo2013 = params.bonustilepromo2013;
   state.fireice = params.fireice;
   state.turnorder = params.turnorder;
-  state.louAI = params.louAI;
+  state.aiAlgorithm = params.aiAlgorithm;
   state.fireiceerrata = params.fireiceerrata;
   state.roundtilepromo2015 = params.roundtilepromo2015;
+  state.worldMap = params.worldMap;
   state.autosave = params.autosave;
 
   var finalscoring = params.finalscoring;
@@ -153,6 +160,23 @@ function startNewRound() {
     var income = getIncome(player, true, state.round - 1 /*because you get the round bonus from last round*/);
     addIncome(player, income);
     addLog(logPlayerNameFun(player) + ' Income: ' + incomeToStringWithPluses(income) + getGreyedResourcesLogString(player));
+    //LOU13 take Riverwalker priest color with income (from rules.js)
+    if(player.faction == F_RIVERWALKERS && income[2] > 0) {
+      //turn priests into color unlock
+      for (var p = 0; p < income[2]; p++) {
+ /* LOU13 from state.js: this.type == S_PRIEST_COLOR, get color with income.
+    Human has to select color on own when income received.
+    callbackState = CS_ACTOR;
+    var color = game.players[playerIndex].actor.chooseAuxColor(playerIndex, callback);
+    var error = unlockColorPriest(player, color);
+    if(error == '') {
+      if(color == Z) addLog(logPlayerNameFun(player) + ' chose priest instead of color. ' + getGreyedResourcesLogString(player));
+      else addLog(logPlayerNameFun(player) + ' chose priest color: ' + getColorName(color) + getGreyedResourcesLogString(player));
+    }
+    else addLog(logPlayerNameFun(player) + ' chose illegal priest color: ' + getColorName(color));
+ */
+      }
+    }
     player.passed = false;
   }
 
@@ -171,14 +195,32 @@ function initialGameLogMessage() {
   addLog('Players: ' + playernames);
   addLog(game.players[state.startPlayer].name + ' is the starting player');
 
+  if(game.finalscoring == 0) addLog('0:  no final scoring');
+  else if(game.finalscoring == 1) addLog('1:  outpost final scoring');
+  else if(game.finalscoring == 2) addLog('2:  SH-SA distance final scoring');
+  else if(game.finalscoring == 3) addLog('3:  building distance final scoring');
+  else if(game.finalscoring == 4) addLog('4:  settlements final scoring');
+  if(state.aiAlgorithm == 0) addLog('0:  AI_Lode enabled');
+  else if(state.aiAlgorithm == 1) addLog('1:  AI_Lou enabled');
+  else if(state.aiAlgorithm == 2) addLog('2:  AI_Level2(revision 9) enabled');
+  else if(state.aiAlgorithm == 3) addLog('3:  AI_Level3(topFactions) enabled');
+  else if(state.aiAlgorithm == 4) addLog('3:  AI_RandomMoves enabled');
+  else if(state.aiAlgorithm == 5) addLog('5:  AI_Level5(revision 15) enabled');
+  else if(state.aiAlgorithm == 6) addLog('6:  AI_Level6(revision 16) enabled');
+  if(state.worldMap == 0) addLog('0:  Standard World enabled');
+  else if(state.worldMap == 1) addLog('1:  Randomized World enabled');
+  else if(state.worldMap == 2) addLog('2:  Randomized Small World enabled');
+  else if(state.worldMap == 3) addLog('3:  Fire & Ice Altered World enabled');
+  else if(state.worldMap == 4) addLog('4:  Fire & Ice World enabled');
+  else if(state.worldMap == 5) addLog('5:  Loon Lakes World enabled');
+
   if(state.newcultistsrule) addLog('cultists errata enabled');
   if(state.towntilepromo2013) addLog('town tiles promo 2013 enabled');
   if(state.bonustilepromo2013) addLog('shipping bonus tile promo 2013 enabled');
-  if(state.fireice) addLog('fire & ice expansion enabled');
-  if(state.turnorder) addLog('variable turn order enabled');
-  if(state.louAI) addLog('Lou New\'s AI enabled');
-  if(state.fireiceerrata) addLog('fire & ice errata enabled');
   if(state.roundtilepromo2015) addLog('round tile promo 2015 enabled');
+  if(state.turnorder) addLog('variable turn order enabled');
+  if(state.fireice) addLog('fire & ice expansion enabled');
+  if(state.fireiceerrata) addLog('fire & ice errata enabled');
   if(state.autosave) addLog('auto save enabled');
 
   addLog('round 1 tile: ' + tileToStringLong(game.roundtiles[1], true));
@@ -209,11 +251,11 @@ function initialGameRender() {
 function initWorldForParams(params) {
   if(localStorageSupported() && location && location.search &&
       location.search.indexOf('playtest') >= 0 &&
-      localStorage['karteneditor_world']) {
-    parseWorld(localStorage['karteneditor_world']);
+      localStorage['mapeditor_world']) {
+    parseWorld(localStorage['mapeditor_world']);
+  } else {
+    params.worldGenerator(game);
   }
-
-  params.worldGenerator(game);
 }
 
 function getAIPlayerName(index) {

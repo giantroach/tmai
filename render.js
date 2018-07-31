@@ -1,4 +1,4 @@
-/*
+/* render8.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -1675,6 +1675,7 @@ function drawSaveLoadUI(onlyload) {
       }, 'No');
 
     }
+    button.title = 'Start a new game';
 
     button = makeLinkButton(150, 0, 'undo', parent);
     button.onclick = function() {
@@ -1699,6 +1700,27 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Redo undone action';
 
+   button = makeLinkButton(250, 0, 'help', parent);
+    button.onclick = function() {
+      var el = makeSizedDiv(50, 50, 400, 235, document.body);
+      el.style.backgroundColor = 'white';
+      el.style.border = '1px solid black';
+      makeText(5, 5, 'Play Fast: Always click Fast when available', el);
+      makeText(5,20, 'POWER:     Automatically burns power if needed for action', el);
+      makeText(5,35, 'CONVERT:   Use these features to get needed resources first', el);
+      makeText(5,50, 'PRIEST:    Click on cult track to use available priest there', el);
+      makeText(5,65, 'Dwelling:    Click on an empty hex or TRANSFORM:build, then hex', el);
+      makeText(5,80, 'Trading post: Click on a dwelling hex', el);
+      makeText(5,95, 'Stronghold:  Click on upgr1, then a trading post hex', el);
+      makeText(5,110, 'Temple:      Click on upgr2, then a trading post hex', el);
+      makeText(5,125,'Sanctuary:   Click on a temple hex', el);
+      makeText(5,140,'Red color menu items indicate actions for this round', el);
+      makeText(5,155,'Toop tips on most buttons+links give more help', el);
+      var button3 = makeButton(25, 180, 'Close', el, function() {
+        document.body.removeChild(el);
+      }, 'Close');
+    };
+    button.title = 'Show user interface help';
 
     var debugbutton = makeLinkButton(1040, 5, 'debug', uiElement);
     debugbutton.onclick = function() {
