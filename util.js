@@ -257,6 +257,7 @@ function makeSameSizeDiv(other, parent) {
 function makeLinkButton(px, py, text, parent) {
   var el =  makeDiv(px, py, parent);
   el.style.textDecoration = 'underline';
+  el.style.whiteSpace = 'nowrap';
   el.style.color = '#0000aa';
   el.style.cursor = 'pointer';
   el.innerHTML = text;

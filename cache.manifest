@@ -1,0 +1,27 @@
+CACHE MANIFEST
+# 2016-07-24
+
+index.html
+util.js?v=20160316
+enums.js?v=20160316
+game.js?v=20160316
+world.js?v=20160316
+faction.js?v=20160316
+player.js?v=20160316
+action.js?v=20160316
+rules.js?v=20160316
+render.js?v=20160316
+menu.js?v=20160316
+strategy.js?v=20160316
+actor.js?v=20160316
+ai_lode.js?v=20160316
+ai_lou.js?v=20160316
+human.js?v=20160316
+state.js?v=20160316
+snellman.js?v=20160316
+save.js?v=20160316
+unittest.js?v=20160316
+fireice.js?v=20160316
+
+tiles.png?v=20160316
+iepixel.gif
