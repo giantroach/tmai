@@ -601,7 +601,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   callbackState = CS_EXECUTE;
   if(this.type == S_PRE) {
     // load game if auto save
-    if(!(preferences.autosave && autoLoad())) {FFFF
+    if(!(preferences.autosave && autoLoad())) {
       renderPreScreen(0, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
       //transitionIfNoActorCallback();
     }
