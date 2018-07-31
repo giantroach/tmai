@@ -560,6 +560,7 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
     }
     currentNum--;
   };
+  var prevDigAndBuildMode = digAndBuildMode
   digAndBuildMode = player.faction == F_GIANTS ? DBM_COLOR : DBM_ONE;
   queueHumanState(HS_DIG, 'You got ' + num + '  bonus spades from the cult track. Click on map to dig, press execute when done.', fun);
 
@@ -571,6 +572,7 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
       actionEl.innerHTML = 'rounddig';
       currentNum = num;
     } else {
+      digAndBuildMode = prevDigAndBuildMode;
       clearHumanState();
       executeButtonFun_ = null;
       executeButtonClearFun_ = null;
