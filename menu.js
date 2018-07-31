@@ -211,11 +211,8 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     params.aiAlgorithm = aiTypeDropDown.selectedIndex;
     params.fireiceerrata = fireiceerratacb.checked;
     params.roundtilepromo2015 = roundtilepromo2015cb.checked;
-<<<<<<< HEAD
-    params.autosave = autosavecb.checked;
-=======
     params.worldMap = worldMapEl.selectedIndex;
->>>>>>> root/master
+    params.autosave = autosavecb.checked;
 
     preferences.newcultistsrule = newcultistcb.checked;
     preferences.towntilepromo2013 = towntilepromo2013cb.checked;
