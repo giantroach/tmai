@@ -1,4 +1,4 @@
-/*
+/* state9.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -84,16 +84,19 @@ var State = function() {
   this.towntilepromo2013 = true; // new town tiles
   this.bonustilepromo2013 = true; // new bonus tile
   this.fireice = true; // Fire & Ice expansion
-  this.fireiceerrata = true; // Official change of rules for shapeshifters and riverwalkers. https://www.boardgamegeek.com/thread/1456706/official-change-rules
+  this.fireiceerrata = true; // Official change of rules for shapeshifters and riverwalkers.
+                             // https://www.boardgamegeek.com/thread/1456706/official-change-rules
 
   // Variable turnorder by Lou
-  this.turnorder = false;
+  this.turnorder = true;  //LOU variable turn order is now default
   this.currentOrder = 0;  //turn position in the order list
   this.passOrder = 0;     //turn position of next pass
   this.turnMatrix = [[],[]];   //current round, next round
 
-  // if true, when a new game initializes, AI's get Lou's AI instead of Lode's AI. TODO: maybe later allow selecting individual AI of every bot
-  this.louAI = false;
+  //if ONE, when a new game initializes, AI is Lou AILou instead of AILode.
+  //DONE: maybe later allow selecting individual AI of every bot
+  this.aiAlgorithm = 1;  //LOU start with aiAlgorithm as default
+  this.worldMap = 4; //Fire & Ice World
 };
 
 function logPlayerNameFun(player) {
@@ -216,6 +219,7 @@ function getInitialDwellingsDone(player) {
   return 8 - player.b_d;
 }
 
+var startTime;
 //TODO: this function probably belongs in rules.js (but not the addLog things)
 function addEndGameScore() {
   //cult tracks
@@ -264,6 +268,10 @@ function addEndGameScore() {
   for(var i = 0; i < game.players.length; i++) {
     addLog(logPlayerNameFun(game.players[i]) + ': ' + game.players[i].vp);
   }
+  addLog('');
+  var date = new Date();
+  var endTime = date.getTime();
+  addLog(' TIME - elapsed run time: ' + (endTime-startTime)/1000. + ' seconds ');
 }
 
 function wrapPlayer(i) {
@@ -287,7 +295,7 @@ State.prototype.selectNextActionPlayer_ = function() {
       if(this.currentOrder == game.players.length) this.currentOrder = 0;
       this.currentPlayer = this.turnMatrix[0][this.currentOrder];
       if(this.currentPlayer < 0) throw new Error('selectNextActionPlayer should not return negative');
-      if(!game.players[this.currentPlayer].passed) break;  //LOU line288
+      if(!game.players[this.currentPlayer].passed) break;  //LOU previous problem area
       count++;
     } else {
       this.currentPlayer = wrapPlayer(this.currentPlayer + 1);
@@ -349,6 +357,8 @@ State.prototype.initNewStateType = function(type) {
   if(type == S_PRE) {
   }
   else if(type == S_INIT_FACTION) {
+    var date = new Date();
+    startTime = date.getTime();
     recalculateColorMaps(); // there may already be colors in it if preset factions were set
     this.currentPlayer = this.startPlayer;
     this.numHandledForState = 0;
@@ -395,6 +405,7 @@ State.prototype.transitionStateCore_ = function(next_state) {
   }
   else if(this.type == S_INIT_FACTION) {
     next_state = S_INIT_FACTION_COLOR;
+
   }
   else if(this.type == S_INIT_FACTION_COLOR) {
     next_state = S_INIT_FAVOR;
@@ -491,7 +502,7 @@ State.prototype.transitionStateCore_ = function(next_state) {
         if(taken || declined) {
           player.getFaction().getGaveLeechIncome(player, taken);
           // TODO: add log if other faction gave resources too
-          if(cultists && declined) addLog(logPlayerNameFun(player) + ' receives one extra pw because everyone declined the cultists' + getGreyedResourcesLogString(player));
+          if(cultists && declined) addLog(logPlayerNameFun(player) + ' receives one extra pw because everyone declined the cultists', getGreyedResourcesLogString(player));
         }
         next_state = S_ACTION;
       }
@@ -602,7 +613,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   if(this.type == S_PRE) {
     // load game if auto save
     if(!(preferences.autosave && autoLoad())) {
-      renderPreScreen(200, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
+      renderPreScreen(0, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
       //transitionIfNoActorCallback();
     }
   }
@@ -617,7 +628,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
       // The player already has a faction, this happens when a "preset" game type was chosen were factions were picked or random
       trySetFaction(player, player.getFaction()); //inits it (such as setting player.color)
       initPlayerFaction(player);
-      addLog(logPlayerNameFun(player) + ' preassigned faction: ' + getFactionCodeName(player.getFaction()) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' preassigned faction: ' + getFactionCodeName(player.getFaction()), getGreyedResourcesLogString(player));
       transitionIfNoActorCallback();
     }
   }
@@ -679,7 +690,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
       state.showResourcesPlayer = leech[0];
       game.players[leech[0]].actor.leechPower(leech[0], this.currentPlayer, amount, amount - 1, this.round, this.leechtaken, this.leecharray.length - this.leechi - 1, callback);
     } else {
-      addLog(logPlayerNameFun(game.players[leech[0]]) + ' could not leech, power already full' + getGreyedResourcesLogString(game.players[leech[0]]));
+      addLog(logPlayerNameFun(game.players[leech[0]]) + ' could not leech, power already full', getGreyedResourcesLogString(game.players[leech[0]]));
       transitionIfNoActorCallback();
     }
   }
@@ -760,7 +771,7 @@ State.prototype.executeResult = function(playerIndex, result) {
     var error = trySetFaction(player, faction);
     if(error == '') {
       initPlayerFaction(player);
-      addLog(logPlayerNameFun(player) + ' chose faction: ' + getFactionCodeName(faction) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' chose faction: ' + getFactionCodeName(faction), getGreyedResourcesLogString(player));
     }
     else addLog(logPlayerNameFun(player) + ' chose illegal faction: ' + getFactionCodeName(faction));
     recalculateColorMaps();
@@ -785,7 +796,7 @@ State.prototype.executeResult = function(playerIndex, result) {
       recalculateColorMaps();
     }
     if(error == '') {
-      addLog(logPlayerNameFun(player) + ' chose faction color: ' + getColorName(color) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' chose faction color: ' + getColorName(color), getGreyedResourcesLogString(player));
     }
     else addLog(logPlayerNameFun(player) + ' chose illegal faction color: ' + getColorName(color));
     return error;
@@ -793,7 +804,7 @@ State.prototype.executeResult = function(playerIndex, result) {
   else if(this.type == S_INIT_FAVOR) {
     var tile = result;
     var error = giveFavorTile(player, tile);
-    if(error == '') addLog(logPlayerNameFun(player) + ' took favor tile ' + getTileCodeName(tile) + getGreyedResourcesLogString(player));
+    if(error == '') addLog(logPlayerNameFun(player) + ' took favor tile ' + getTileCodeName(tile), getGreyedResourcesLogString(player));
     else addLog(logPlayerNameFun(player) + ' attempted illegal favor tile ' + tile + '. Error: ' + error);
     return error;
   }
@@ -810,7 +821,7 @@ State.prototype.executeResult = function(playerIndex, result) {
       createAuxColorToPlayerMap();
     }
     if(error == '') {
-      addLog(logPlayerNameFun(player) + ' chose faction color: ' + getColorName(color) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' chose faction color: ' + getColorName(color), getGreyedResourcesLogString(player));
     }
     else addLog(logPlayerNameFun(player) + ' chose illegal faction color: ' + getColorName(color));
     return error;
@@ -819,14 +830,14 @@ State.prototype.executeResult = function(playerIndex, result) {
     var x = result[0];
     var y = result[1];
     var error = placeInitialDwelling(player, x, y);
-    if(error == '') addLog(logPlayerNameFun(player) + ' placed initial dwelling at ' + printCo(x, y) + getGreyedResourcesLogString(player));
+    if(error == '') addLog(logPlayerNameFun(player) + ' placed initial dwelling at ' + printCo(x, y), getGreyedResourcesLogString(player));
     else addLog(logPlayerNameFun(player) + ' attempted illegal initial dwelling ' + printCo(x, y) + '. Error: ' + error);
     return error;
   }
   else if(this.type == S_INIT_BONUS) {
     var tile = result;
     var error = giveBonusTile(player, tile);
-    if(error == '') addLog(logPlayerNameFun(player) + ' took bonus tile ' + getTileCodeName(tile) + getGreyedResourcesLogString(player));
+    if(error == '') addLog(logPlayerNameFun(player) + ' took bonus tile ' + getTileCodeName(tile), getGreyedResourcesLogString(player));
     else addLog(logPlayerNameFun(player) + ' attempted illegal bonus tile ' + tile + '. Error: ' + error);
     return error;
   }
@@ -844,7 +855,7 @@ State.prototype.executeResult = function(playerIndex, result) {
     var cultstring = getCultDifferenceString(cultbefore, cultafter);
     var diffstring = resstring + (resstring.length > 0 && cultstring.length > 0 ? ' ' : '') + (tokensbefore == tokensafter ? '' : ' burnt:' + (tokensbefore - tokensafter)) + cultstring;
     if(diffstring.length > 0) diffstring = ' [' + diffstring + ']';
-    if(error == '') addLog(logPlayerNameFun(player) + ' Action: <b>' + actionsToString(actions) + '</b>' + diffstring + getGreyedResourcesLogString(player));
+    if(error == '') addLog(logPlayerNameFun(player) + ' Action: <b>' + actionsToString(actions) + '</b>', getGreyedResourcesLogString(player));
     else addLog(logPlayerNameFun(player) + ' attempted illegal action: ' + actionsToString(actions) + ' Error: ' + error);
 
     if(error == '') {
@@ -865,10 +876,10 @@ State.prototype.executeResult = function(playerIndex, result) {
     var amount = this.leecharray[this.leechi][1];
     if(leech) {
       leechPower(player, amount);
-      addLog(logPlayerNameFun(player) + ' leeched ' + amount + ' from ' + logPlayerNameFun(getCurrentPlayer()) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' leeched ' + amount + ' from ' + logPlayerNameFun(getCurrentPlayer()), getGreyedResourcesLogString(player));
       state.leechtaken++;
     } else {
-      addLog(logPlayerNameFun(player) + ' declined to leech ' + amount + ' from ' + logPlayerNameFun(getCurrentPlayer()) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' declined to leech ' + amount + ' from ' + logPlayerNameFun(getCurrentPlayer()), getGreyedResourcesLogString(player));
     }
   }
   else if(this.type == S_CULTISTS) {
@@ -878,25 +889,25 @@ State.prototype.executeResult = function(playerIndex, result) {
         player.vp--;
         player.pw2++;
       }
-      addLog(logPlayerNameFun(player) + (result ? 'converted 1vp to a power token' : 'declined to convert 1vp to a power token') + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + (result ? 'converted 1vp to a power token' : 'declined to convert 1vp to a power token'), getGreyedResourcesLogString(player));
     } else {
       var cult = result;
       giveCult(player, cult, 1);
-      addLog(logPlayerNameFun(player) + ' used cultists ability on ' + getCultName(cult) + getGreyedResourcesLogString(player));
+      addLog(logPlayerNameFun(player) + ' used cultists ability on ' + getCultName(cult), getGreyedResourcesLogString(player));
     }
   }
   else if(this.type == S_CULT) {
     var cult = result;
     giveCult(player, cult, 1);
     player.freecult--;
-    addLog(logPlayerNameFun(player) + ' chose cult track ' + getCultName(cult) + getGreyedResourcesLogString(player));
+    addLog(logPlayerNameFun(player) + ' chose cult track ' + getCultName(cult), getGreyedResourcesLogString(player));
   }
   else if(this.type == S_PRIEST_COLOR) {
     var color = result;
     var error = unlockColorPriest(player, color);
     if(error == '') {
-      if(color == Z) addLog(logPlayerNameFun(player) + ' chose priest instead of color. ' + getGreyedResourcesLogString(player));
-      else addLog(logPlayerNameFun(player) + ' chose priest color: ' + getColorName(color) + getGreyedResourcesLogString(player));
+      if(color == Z) addLog(logPlayerNameFun(player) + ' chose priest instead of color. ', getGreyedResourcesLogString(player));
+      else addLog(logPlayerNameFun(player) + ' chose priest color: ' + getColorName(color), getGreyedResourcesLogString(player));
     }
     else addLog(logPlayerNameFun(player) + ' chose illegal priest color: ' + getColorName(color));
     return error;
@@ -911,7 +922,7 @@ State.prototype.executeResult = function(playerIndex, result) {
     for(var i = 0; i < digs.length; i++) {
       error = tryRoundBonusDig(player, digs[i][0], digs[i][1], digs[i][2]);
       if(error == '') {
-        addLog(logPlayerNameFun(player) + ' did round bonus dig at ' + printCo(digs[i][1], digs[i][2]) + getGreyedResourcesLogString(player));
+        addLog(logPlayerNameFun(player) + ' did round bonus dig at ' + printCo(digs[i][1], digs[i][2]), getGreyedResourcesLogString(player));
       } else {
         addLog(logPlayerNameFun(player) + ' attempted illegal round bonus dig at: ' + printCos(digs) + '. Error: ' + error);
         return error;

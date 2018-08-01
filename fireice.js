@@ -1,4 +1,4 @@
-/*
+/* fireice9.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -437,6 +437,8 @@ registerWorld('Fire & Ice Altered', 'fire_ice_altered', function(game) {
   game.world = clone(fireIceAltered);
 });
 
+registerWorld('Fire & Ice World', 'fire_ice', initFireIceWorld);
+
 var fireIceWorld = [ U,I,U,K,Y,I,S,G,R,B,Y,B,N,
                     R,Y,I,B,S,R,I,I,I,Y,U,K,S,
                      G,K,I,I,I,U,G,Y,I,I,I,I,N,
@@ -447,12 +449,78 @@ var fireIceWorld = [ U,I,U,K,Y,I,S,G,R,B,Y,B,N,
                     K,B,I,K,U,S,B,I,Y,K,I,R,B,
                      S,G,I,R,Y,K,Y,I,B,U,I,U,N];
 
+//The world array has the color of each hex. It is inited with the standard world map.
+function initFireIceWorld(game) {
+  game.bw = 13;
+  game.bh = 9;
+  game.btoggle = true;
+  game.world = clone(fireIceWorld);
+}
 
+
+/*
 registerWorld('Fire & Ice World', 'fire_ice', function(game) {
   game.bw = 13;
   game.bh = 9;
   game.btoggle = true;
   game.world = clone(fireIceWorld);
+};
+*/
+
+/////////// Loon Lakes //////////////////////////////////////////
+// https://boardgamegeek.com/thread/1603489/loon-lakes
+
+// Loon Lakes version 1.3
+/*var loonLakeWorld = [ G,S,R,G,U,B,U,R,I,I,G,B,N,
+                    Y,K,B,I,I,K,Y,I,G,S,I,K,U,
+                     U,I,I,G,R,S,I,K,B,R,I,Y,N,
+                    B,R,S,I,Y,U,G,I,I,Y,I,R,K,
+                     G,Y,I,K,B,I,I,R,I,B,S,U,N,
+                    S,I,U,S,I,Y,I,S,I,U,K,G,R,
+                     R,I,I,I,R,B,G,K,Y,I,I,B,N,
+                    Y,B,K,I,G,S,U,I,I,S,G,I,S,
+                     K,U,I,B,I,I,I,Y,R,U,Y,K,N];*/
+
+// Loon Lakes version 1.6
+var loonLakeWorld = [ S,B,R,U,Y,B,Y,R,I,I,G,B,N,
+                     Y,K,G,I,I,K,U,I,G,S,I,U,K,
+                      U,I,I,G,R,S,I,K,B,R,I,Y,N,
+                     B,R,S,I,Y,U,G,I,I,Y,I,K,R,
+                      G,Y,I,K,B,I,I,R,I,S,G,U,N,
+                     S,I,U,S,I,Y,I,S,I,U,K,B,R,
+                      R,I,I,I,R,G,U,K,Y,I,I,S,N,
+                     Y,B,K,I,B,S,B,I,I,S,G,I,B,
+                      K,U,I,G,I,I,I,G,R,U,Y,K,N];
+
+
+registerWorld('Loon Lakes World', 'loon_lake', function(game) {
+  game.bw = 13;
+  game.bh = 9;
+  game.btoggle = true;
+  game.world = clone(loonLakeWorld);
+});
+
+
+/////////// Fjords //////////////////////////////////////////
+// https://boardgamegeek.com/thread/1750509/fjords-live-snellman-playtesters-appreciated
+
+
+var fjordsWorld = [ G,K,I,U,Y,S,K,G,Y,R,B,R,Y,
+                     B,U,I,B,G,R,I,I,I,I,I,U,N,
+                    S,G,R,I,I,U,I,K,S,U,Y,I,S,
+                     I,I,I,S,I,I,G,R,K,B,G,I,N,
+                    R,S,Y,I,B,R,I,U,Y,S,U,I,K,
+                     K,U,I,G,Y,G,I,S,B,G,I,R,N,
+                    Y,B,I,K,S,K,B,I,U,K,I,G,S,
+                     G,I,U,R,U,Y,R,I,I,I,R,B,N,
+                    K,I,I,G,B,S,B,I,S,Y,U,K,Y];
+
+
+registerWorld('Fjords (beta)', 'fjords', function(game) {
+  game.bw = 13;
+  game.bh = 9;
+  game.btoggle = false;
+  game.world = clone(fjordsWorld);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -631,4 +699,3 @@ function getSettlementEndScores() {
 }
 
 registerFinalScoring('settlements' ,'Most Settlements', getSettlementEndScores);
-

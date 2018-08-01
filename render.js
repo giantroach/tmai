@@ -1,4 +1,4 @@
-/*
+/* render8.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -43,7 +43,12 @@ document.body.appendChild(hudElement);
 var helpEl = makeDiv(563, 500, document.body);
 helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
+helpEl.style.whiteSpace = 'nowrap';
+
 var actionEl = makeDiv(563, 528, document.body);
+actionEl.id = 'action';
+actionEl.style.whiteSpace = 'nowrap';
+
 var logEl = makeDiv(5, 1920, document.body);
 logEl.id = 'log';
 
@@ -109,7 +114,8 @@ var lastLogLine = '';
 var logUpsideDown = false;
 var logColored = false; //coloredlog
 
-function addLog(text) {
+function addLog() {
+  var text = Array.prototype.join.call(arguments, '<br/>');
   if(logUpsideDown) logText = text + '<br/>' + logText;
   else logText += '<br/>' + text;
   lastLogLine = text;
@@ -914,7 +920,10 @@ function drawHud2(players, onTileClickMain) {
 
   drawCultTracks(/*840*/ 5 + game.bw * 64, 40);
   drawHumanUI(563, 570, state.showResourcesPlayer);
-  if(state.type == S_GAME_OVER) drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
+  if(state.type == S_GAME_OVER) {
+    autoSave(game, state, logText);
+    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
+  }
 }
 
 function drawEndGameScoring(px, py) {
@@ -989,7 +998,7 @@ function drawSummary(px, py, playerIndex) {
     if(player.index == state.startPlayer) name += ' [S]';
     playerText += makeHtmlTextWithColors(name, fgcolor, bgcolor) + ' ';
   }
-  makeText(px + 60, py, playerText, parent).style.width = '1000px'; //prevetn wrap
+  makeText(px + 60, py, playerText, parent).style.whiteSpace = 'nowrap'; //prevetn wrap
 
 
   /*makeText(px, py + 16, 'Taken: ', parent).title = 'list of octogon-actions taken this round. Includes the faction specific actions of other players';
@@ -1690,6 +1699,7 @@ function drawSaveLoadUI(onlyload) {
       }, 'No');
 
     }
+    button.title = 'Start a new game';
 
     button = makeLinkButton(150, 0, 'undo', parent);
     button.onclick = function() {
@@ -1714,6 +1724,27 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Redo undone action';
 
+   button = makeLinkButton(250, 0, 'help', parent);
+    button.onclick = function() {
+      var el = makeSizedDiv(50, 50, 400, 235, document.body);
+      el.style.backgroundColor = 'white';
+      el.style.border = '1px solid black';
+      makeText(5, 5, 'Play Fast: Always click Fast when available', el);
+      makeText(5,20, 'POWER:     Automatically burns power if needed for action', el);
+      makeText(5,35, 'CONVERT:   Use these features to get needed resources first', el);
+      makeText(5,50, 'PRIEST:    Click on cult track to use available priest there', el);
+      makeText(5,65, 'Dwelling:    Click on an empty hex or TRANSFORM:build, then hex', el);
+      makeText(5,80, 'Trading post: Click on a dwelling hex', el);
+      makeText(5,95, 'Stronghold:  Click on upgr1, then a trading post hex', el);
+      makeText(5,110, 'Temple:      Click on upgr2, then a trading post hex', el);
+      makeText(5,125,'Sanctuary:   Click on a temple hex', el);
+      makeText(5,140,'Red color menu items indicate actions for this round', el);
+      makeText(5,155,'Toop tips on most buttons+links give more help', el);
+      var button3 = makeButton(25, 180, 'Close', el, function() {
+        document.body.removeChild(el);
+      }, 'Close');
+    };
+    button.title = 'Show user interface help';
 
     var debugbutton = makeLinkButton(1040, 5, 'debug', uiElement);
     debugbutton.onclick = function() {

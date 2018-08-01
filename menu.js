@@ -1,4 +1,4 @@
-/*
+/* menu15.js
 TM AI
 
 Copyright (C) 2013-2014 by Lode Vandevenne
@@ -38,8 +38,8 @@ each button fun receives the following object containing the dropdown states:
   bonustilepromo2013
   fireice
   turnorder: variable turn order
-  louAI: Lou New's AI
-  fireiceerrata: shapeshifters and river walkers made less powerful
+  aiAlgorithm: 0 - Lode AI, 1 - Lou AI, 2 - Level2 AI, 3 - Level3 AI, 4 - random AI, 5 - Level5 AI, 6 - Level6 AI
+  fireiceerrata: shapeshifters and riverwalkers made less powerful
   roundtilepromo2015
 }
 */
@@ -48,12 +48,12 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
 
   makeText(px, py - 135, 'TM AI: Play TM against AI players.<br/>'
       + 'Programmed by Lode Vandevenne.<br/>'
-      + 'AI alternate by Lou New.<br/>'
+      + 'AI alternates by Lou New.<br/>'
       + 'Drawings by Giordano Segatta.<br/>'
-      + 'version: v.20160512<br/>'
+      + 'version 20170822<br/>'
       + 'Links:<br/>'
       + 'TM on BGG: <a href="http://boardgamegeek.com/boardgame/120677/terra-mystica">http://boardgamegeek.com/boardgame/120677/terra-mystica</a><br/>'
-      + 'Snellman: <a href="http://terra.snellman.net/">http://terra.snellman.net/</a><br/>'
+      + 'Snellman (multiplayer): <a href="http://terra.snellman.net/">http://terra.snellman.net/</a><br/>'
       + '<br/>'
       + '*: Choices with an asterix are outside of the regular game rules.<br/>'
       , parent);
@@ -92,8 +92,11 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
   var turnordercb = makeCheckbox(px + 160, ppy + 72, parent, 'Variable Turn Order', 'Enable variable turn order expansion. NOTE: With this checkbox disabled, the original fixed turn order after the first player pass is used.');
   turnordercb.checked = preferences.turnorder;
 
-  var louAIcb = makeCheckbox(px + 350, ppy + 72, parent, 'Lou New\'s alternate AI ', 'Work-in-progress new AI by Lou New. This AI may be stronger and supports the expansion factions better.');
-  louAIcb.checked = preferences.louAI;
+  //var louAIcb = makeCheckbox(px + 350, ppy + 72, parent, 'Lou New\'s alternate AI ', 'new AI by Lou New. This AI is  stronger and supports the expansion factions better.');
+  //louAIcb.checked = preferences.aiAlgorithm;
+  var aiTypeDropDown = makeLabeledDropDown(px + 350, ppy, 'AI Type', ['AI_Lode(original)', 'AI_Lou(revised)', 'AI_Level2(ver9)', 'AI_Level3(topFactions)', 'AI_Random_Moves', 'AI_Level5(ver15)', 'AI_Level6(future)'], parent);
+  assignPreferenceToDropdown(aiTypeDropDown, preferences.aiAlgorithm);
+
 
   var fireiceerratacb = makeCheckbox(px, ppy + 89, parent, 'Fire&Ice Errata', 'The official rule change of 2015, making shapeshifters and riverwalkers less powerful.');
   fireiceerratacb.checked = preferences.fireiceerrata;
@@ -173,7 +176,8 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     preferences.numplayersdropdown = numPlayerEl.selectedIndex;
     params.startplayer = startPlayerEl.selectedIndex - 1;
     preferences.startplayerdropdown = startPlayerEl.selectedIndex;
-    params.worldGenerator = worldGenerators[worldMapEl.selectedIndex] || initStandardWorld;
+    //LOU change from default StandardWorld to FireIceWorld
+    params.worldGenerator = worldGenerators[worldMapEl.selectedIndex] || initFireIceWorld;
     params.presetfaction = [];
     for(var i = 0; i < factionDropDowns.length; i++) {
       var f = factions[factionDropDowns[i].selectedIndex - 2] /*because first two choices are 'choose' and 'random'*/;
@@ -204,9 +208,10 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     params.bonustilepromo2013 = bonustilepromo2013cb.checked;
     params.fireice = fireicecb.checked;
     params.turnorder = turnordercb.checked;
-    params.louAI = louAIcb.checked;
+    params.aiAlgorithm = aiTypeDropDown.selectedIndex;
     params.fireiceerrata = fireiceerratacb.checked;
     params.roundtilepromo2015 = roundtilepromo2015cb.checked;
+    params.worldMap = worldMapEl.selectedIndex;
     params.autosave = autosavecb.checked;
 
     preferences.newcultistsrule = newcultistcb.checked;
@@ -214,7 +219,7 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     preferences.bonustilepromo2013 = bonustilepromo2013cb.checked;
     preferences.fireice = fireicecb.checked;
     preferences.turnorder = turnordercb.checked;
-    preferences.louAI = louAIcb.checked;
+    preferences.aiAlgorithm = aiTypeDropDown.selectedIndex;
     preferences.fireiceerrata = fireiceerratacb.checked;
     preferences.roundtilepromo2015 = roundtilepromo2015cb.checked;
     preferences.autosave = autosavecb.checked;
@@ -233,12 +238,19 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     if(gameTypeDropDown.selectedIndex == 1) randomButtonFun(params);
     if(gameTypeDropDown.selectedIndex == 2) beginnerButtonFun(params);
     if(gameTypeDropDown.selectedIndex == 3) quickButtonFun(params);
-  }), 'Start new game');
+  }), 'Start a new game');
 
   makeText(px, py + 480 + 17, '<h3>Documentation:</h3>' +
     '<h4>Updates</h4>' +
-    '<p>20151024: Added the new official fire&ice rule change as an option. Also added the new 2015 mini expansion: 4VP for temple round bonus tile.<p/>' +
-    '<p>20150525: There is now a choice between the old AI, and Lou\'s new AI. The new AI is a work in progress! It is stronger than the old AI and works with the expansion factions, but is experimental so may have a few bugs.<p/>' +
+     '<p>20171014: Updated loon lake to final version (1.6), and added fjords map beta (being designed in bgg thread). <p/>' +
+     '<p>20170822: AI_Level5 processing improvements.  Default to AI_Level5. <p/>' +
+     '<p>20170702: Added AI_Random, which makes random moves out of the possible ones. Expect oddly placed bridges and the occasional town by pure chance.<p/>' +
+    '<p>20170612: AI_Level3 processing improvements.  Default to AI_Level3. <p/>' +
+    '<p>20160930: AI_Level2 processing improvements.  <p/>' +
+    '<p>20160909: Make Fire&Ice World the default map along with Fire&Ice options and Variable Turn Order.  Added new AI option choice with Lou AI default.  <p/>' +
+    '<p>20160804: Added LoonLake option.  Known bugs fixed.  Lou AI works best with World Map: Fire&Ice World. Changed probability of factions based upon final scoring. <p/>' +
+'<p>20151024: Added the new official fire&ice rule change as an option. Also added the new 2015 mini expansion: 4VP for temple round bonus tile.<p/>' +
+    '<p>20150525: There is now a choice between the old AI, and Lou\'s new AI. The new AI is a work in progress! It is stronger than the old AI and works with the expansion factions, but is experimental.<p/>' +
     '<p>20150509: AI tweaks by Lou New added.<p/>' +
     '<p>20150108: Riverwalkers added (possibly still with bugs).<p/>' +
     '<p>20141021: The alternate Fire & Ice world also added.<p/>' +
@@ -363,8 +375,8 @@ var preferences = {
   towntilepromo2013: true,
   bonustilepromo2013: true,
   fireice: true,
-  turnorder: false,
-  louAI: false,
+  turnorder: true,
+  aiAlgorithm: 5,
   fireiceerrata: true,
   roundtilepromo2015: true,
   autosave: false,
@@ -396,7 +408,7 @@ function setLocalStorage() {
   localStorage['bonustilepromo2013'] = preferences.bonustilepromo2013;
   localStorage['fireice'] = preferences.fireice;
   localStorage['turnorder'] = preferences.turnorder;
-  localStorage['louAI'] = preferences.louAI;
+  localStorage['aiAlgorithm'] = preferences.aiAlgorithm;
   localStorage['fireiceerrata'] = preferences.fireiceerrata;
   localStorage['roundtilepromo2015'] = preferences.roundtilepromo2015;
   localStorage['autosave'] = preferences.autosave;
@@ -409,6 +421,7 @@ function getLocalStorage() {
   preferences.gametypedropdown = localStorage['gametypedropdown'];
   preferences.playertypedropdown = localStorage['playertypedropdown'];
   preferences.worldmapdropdown = localStorage['worldmapdropdown'];
+  if(preferences.worldmapdropdown == undefined) preferences.worldmapdropdown = 4; //default to Fire&Ice World map
   preferences.finalscoringdropdown = localStorage['finalscoringdropdown'];
   preferences.factiondropdown[0] = localStorage['factiondropdown0'];
   preferences.factiondropdown[1] = localStorage['factiondropdown1'];
@@ -418,13 +431,14 @@ function getLocalStorage() {
   if(localStorage['presetroundtiles']) preferences.presetroundtiles = JSON.parse(localStorage['presetroundtiles']);
   if(localStorage['presetbonustiles']) preferences.presetbonustiles = JSON.parse(localStorage['presetbonustiles']);
   preferences.numplayersdropdown = localStorage['numplayersdropdown'];
+  if(preferences.numplayersdropdown == undefined) preferences.numplayersdropdown = 0; //LOU13 default 4 players=1, 5 players=0
   preferences.startplayerdropdown = localStorage['startplayerdropdown'];
   if(localStorage['newcultistsrule'] != undefined) preferences.newcultistsrule = localStorage['newcultistsrule'] == 'true';
   if(localStorage['towntilepromo2013'] != undefined) preferences.towntilepromo2013 = localStorage['towntilepromo2013'] == 'true';
   if(localStorage['bonustilepromo2013'] != undefined) preferences.bonustilepromo2013 = localStorage['bonustilepromo2013'] == 'true';
   if(localStorage['fireice'] != undefined) preferences.fireice = localStorage['fireice'] == 'true';
   if(localStorage['turnorder'] != undefined) preferences.turnorder = localStorage['turnorder'] == 'true';
-  if(localStorage['louAI'] != undefined) preferences.louAI = localStorage['louAI'] == 'true';
+  if(localStorage['aiAlgorithm'] != undefined) preferences.aiAlgorithm = localStorage['aiAlgorithm'];
   if(localStorage['fireiceerrata'] != undefined) preferences.fireiceerrata = localStorage['fireiceerrata'] == 'true';
   if(localStorage['roundtilepromo2015'] != undefined) preferences.roundtilepromo2015 = localStorage['roundtilepromo2015'] == 'true';
   if(localStorage['autosave'] != undefined) preferences.autosave = localStorage['autosave'] == 'true';
@@ -433,5 +447,3 @@ function getLocalStorage() {
 window.onbeforeunload = setLocalStorage;
 getLocalStorage();
 
-window.onbeforeunload = setLocalStorage;
-getLocalStorage();
