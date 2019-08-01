@@ -1,0 +1,37 @@
+#bonus,
+#favor,
+#cult,
+#town,
+#round,
+#final,
+#cult,
+#human-ui,
+#players,
+#summary {
+    position: relative;
+    top: 30px;
+    display: none;
+    z-index: 1;
+}
+
+#human-ui > div {
+    font-size: 20px;
+}
+
+#action {
+    width: 820px;
+    background-color: lightgray;
+    border: 1px solid darkgray;
+    height: 20px;
+    line-height: 20px;
+    padding: 2px;
+    z-index: 0;
+}
+
+#log {
+    width: 820px;
+    height: 100px;
+    overflow-y: auto;
+    border: 1px solid darkgray;
+    z-index: 0;
+}

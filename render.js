@@ -45,11 +45,11 @@ helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
 helpEl.style.whiteSpace = 'nowrap';
 
-var actionEl = makeDiv(563, 528, document.body);
+var actionEl = makeDiv(0, 500, document.body);
 actionEl.id = 'action';
 actionEl.style.whiteSpace = 'nowrap';
 
-var logEl = makeDiv(5, 1920, document.body);
+var logEl = makeDiv(0, 1920, document.body);
 logEl.id = 'log';
 
 //UI that pops up temporarily sometimes
@@ -116,14 +116,21 @@ var logColored = false; //coloredlog
 
 function addLog() {
   var text = Array.prototype.join.call(arguments, '<br/>');
+  if (!text) { return; }
   if(logUpsideDown) logText = text + '<br/>' + logText;
   else logText += '<br/>' + text;
   lastLogLine = text;
 }
 
 function displayLog() {
-  logEl.innerHTML = logText;
+  logEl.innerHTML = trimEmptyLines(logText);
   actionEl.innerHTML = lastLogLine;
+  logEl.scrollTop = 99999;
+}
+
+function trimEmptyLines(htmlText) {
+  console.log('htmlText', htmlText);
+  return htmlText.replace(/(\<br\/\>)+/g, '<br/>');
 }
 
 //removes last log entry
@@ -366,6 +373,11 @@ function drawCultTracks(px, py) {
   var trackheight = 450;
   var container = hudSubElement('cult');
 
+  // px = px || 0;
+  // py = py || 0;
+  px = 0;
+  py = 0;
+
   function drawTrack(x, y, cult) {
     var color = getCultColor(cult);
     var track = makeSizedDiv(x, y, trackwidth, trackheight - 30, container);
@@ -382,7 +394,7 @@ function drawCultTracks(px, py) {
       var player = game.players[i];
       if(player.color == I || player.color == N) continue;
       var num = player.cult[cult];
-      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), 7 + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor, container);
+      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), -32 + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor, container);
     }
     for(var i = 0; i < 4; i++) {
       var x2 = x + 5 + Math.floor(5 + i * trackwidth / 5);
@@ -466,8 +478,8 @@ function drawTownTile(px, py, tile, onTileClick) {
   return renderTownTile(px, py, tile, vp, text, onTileClick);
 }
 
-function renderBonusTile(px, py, tile, text1, text2, text3, onTileClick) {
-  var container = hudSubElement('bonus');
+function renderBonusTile(px, py, tile, text1, text2, text3, onTileClick, parent) {
+  var container = parent || hudSubElement('bonus');
   var el = makeDiv(px, py, container);
   el.style.border = '1px solid #55a';
   el.style.width = 47;
@@ -625,7 +637,9 @@ function drawTile(px, py, tile, onTileClick, index) {
 
 //returns draw width
 //ui: whether it's the clickable ones that need ui click elements on them
-function drawTilesMap(parent, px, py, tiles, maxWidth, startX, onTileClick) {
+function drawTilesMap(parent, tiles, maxWidth, startX, onTileClick) {
+  var px = 0;
+  var py = 0;
   var px2 = 0;
   var py2 = 0;
   var i = 0;
@@ -692,7 +706,9 @@ function renderFinalScoringTile(px, py, text1, text2, text3, text4, text5, text6
   return [71, 61];
 }
 
-function drawFinalScoringTile(px, py, index) {
+function drawFinalScoringTile(index) {
+  var px = 0;
+  var py = 0;
   var text1 = 'cults:';
   var text2 = '8/4/2';
   var text3 = 'network:';
@@ -778,8 +794,10 @@ function getPlayerResourcesString(player, markup) {
 }
 
 function drawPlayerPanel(px, py, player, scoreProjection) {
-  var container = hudSubElement('player-' + getFullName(player));
-  var bg = makeSizedDiv(px - 5, py - 5, 1073, 185, container)
+  var rootContainer = hudSubElement('players');
+  container = makeElement(rootContainer, 'div');
+  container.id = 'player-' + getFullName(player);
+  var bg = makeSizedDiv(px - 5, py - 5, 800, 185, container)
   bg.style.border = player.index == state.currentPlayer ? '2px solid black' : '1px solid black';
   bg.style.backgroundColor = '#fff0e0';
 
@@ -894,15 +912,15 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
   var py2 = 0;
   var co;
 
-  co = drawTilesMap(hudSubElement('bonus'), px + 320 + px2, py + 10 + py2, bonustiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('bonus'), bonustiles, 600 - px2, px + 320, null);
   px2 += co[0] + 5;
   if(co[1] != 0 && py2 == 0) { py2 = 80; }
 
-  co = drawTilesMap(hudSubElement('favor'), px + 320 + px2, py + 10 + py2, player.favortiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('favor'), player.favortiles, 600 - px2, px + 320, null);
   px2 += co[0] + 5;
   if(co[1] != 0 && py2 == 0) { py2 = 80;}
 
-  co = drawTilesMap(hudSubElement('town'), px + 320 + px2, py + 10 + py2, player.towntiles, 600 - px2, px + 320, null);
+  co = drawTilesMap(hudSubElement('town'), player.towntiles, 600 - px2, px + 320, null);
 }
 
 //if onTileClick not null, added as onclick for the tile elements. Gets the tile as argument.
@@ -910,13 +928,13 @@ function drawHud2(players, onTileClickMain) {
   hudElement.innerHTML = '';
   var scoreProjection;
   if(state.round == 6) scoreProjection = projectEndGameScores();
-  for(var i = 0; i < players.length; i++) drawPlayerPanel(10, 900 + 205 * i, players[i], scoreProjection);
+  for(var i = 0; i < players.length; i++) drawPlayerPanel(10, 0 + 205 * i, players[i], scoreProjection);
 
-  drawTilesArray(5, 520, game.roundtiles, 500, 5, onTileClickMain);
-  drawTilesMap(hudSubElement('bonus'), 5, 595, game.bonustiles, 500, 5, onTileClickMain);
-  drawTilesMap(hudSubElement('town'), 5, 675, game.towntiles, 500, 5, onTileClickMain);
-  drawTilesMap(hudSubElement('favor'), 5, 735, game.favortiles, 450, 5, onTileClickMain);
-  drawFinalScoringTile(462, 520, game.finalscoring);
+  drawTilesArray(5, 0, game.roundtiles, 500, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('bonus'), game.bonustiles, 500, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('town'), game.towntiles, 500, 5, onTileClickMain);
+  drawTilesMap(hudSubElement('favor'), game.favortiles, 450, 5, onTileClickMain);
+  drawFinalScoringTile(game.finalscoring);
 
   drawCultTracks(/*840*/ 5 + game.bw * 64, 40);
   drawHumanUI(563, 570, state.showResourcesPlayer);
@@ -968,7 +986,9 @@ function makeHtmlTextWithColors(text, fgcolor, bgcolor) {
 }
 
 //summary near the actions panel so that you don't have to look at other parts of the screen to see your resources etc...
-function drawSummary(px, py, playerIndex) {
+function drawSummary(playerIndex) {
+  var px = 0;
+  var py = 0;
   var container = hudSubElement('summary');
   var div = makeSizedDiv(px - 5, py, 520 + 5, 90, container);
   div.style.backgroundColor = getLighterColor(getImageColor(game.players[playerIndex].woodcolor), 32);
@@ -1056,18 +1076,26 @@ var ACTIONPANELY = 0;
 var ACTIONPANELW = 0;
 var ACTIONPANELH = 0;
 
-function drawHumanUI(px, py, playerIndex) {
+function drawHumanUI(x, y, playerIndex) {
+  var px = 0;
+  var py = 0;
   var parent = hudSubElement('human-ui');
   var player = game.players[playerIndex];
 
   ACTIONPANELX = px - 5;
   ACTIONPANELY = py - 5;
-  ACTIONPANELW = 520;
-  ACTIONPANELH = 150;
-  var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent).style.border = '1px solid black';
+  ACTIONPANELW = 800;
+  ACTIONPANELH = 300;
+  var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent)
+  bg.style.border = '1px solid black';
+  bg.style.backgroundColor = 'white';
+  bg.style.opacity = 0.8;
 
+  toggleDisplay(document.getElementById('human-ui'), 'block');
   if(showingNextButtonPanel) {
-    var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
+    // var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
+    var bg = makeSizedDiv(400, 400, 100, 100, parent);
+    bg.id = 'next';
     bg.style.backgroundColor = 'white';
     bg.style.border = '1px solid black';
     var cx = ACTIONPANELX + ACTIONPANELW / 2;
@@ -1089,6 +1117,9 @@ function drawHumanUI(px, py, playerIndex) {
       drawIcon(cx, cy, 0, player.auxcolor, parent);
       drawIcon(cx, cy, B_D, player.woodcolor, parent);
       makeText(px, py + 2, 'click a valid location on the map to continue', parent);
+      var buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_DIG) {
       var ptype = pactions.length > 0 ? pactions[pactions.length - 1].type : A_NONE; //previous action type
@@ -1132,7 +1163,7 @@ function drawHumanUI(px, py, playerIndex) {
         button.title = 'Cancel digging.';
         ry += 24;
       } else {
-        var execbutton = makeExecButton(player, px + 410, py + 100, parent, executeButtonFun, 'Execute round bonus digs.');
+        var execbutton = makeExecButton(player, px + 680, py + 240, parent, executeButtonFun, 'Execute round bonus digs.');
       }
     }
     else if(humanstate == HS_MAP) {
@@ -1152,8 +1183,13 @@ function drawHumanUI(px, py, playerIndex) {
       drawOrb(cx + 25, cy, S, parent);
     }
     else if(humanstate == HS_BONUS_TILE) {
+      // FIXME
       makeText(px, py + 2, 'click on a bonus tile on the left to continue. An example is shown below.', parent);
-      renderBonusTile(cx - 30, cy - 32, T_NONE, '', '?', '', undefined);
+      renderBonusTile(cx - 30, cy - 32, T_NONE, '', '?', '', undefined, parent);
+      toggleDisplay(document.getElementById('bonus'), 'block');
+      var buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_FAVOR_TILE) {
       makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
@@ -1165,7 +1201,7 @@ function drawHumanUI(px, py, playerIndex) {
     }
   }
 
-  if(game.players.length > 0) drawSummary(px, py + ACTIONPANELH + 5, playerIndex);
+  if(game.players.length > 0) drawSummary(playerIndex);
 }
 
 function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
@@ -1187,7 +1223,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
 
   makeText(px, py, 'POWER:', parent);
   if(player.getFaction().canTakeAction(player, A_POWER_BRIDGE, game)) {
-    button = makeLinkButton(px + 90, py, getActionName(A_POWER_BRIDGE), parent);
+    button = makeLinkButton(px + 135, py, getActionName(A_POWER_BRIDGE), parent);
     button.title = '3pw to build a bridge';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1196,7 +1232,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
   if(player.getFaction().canTakeAction(player, A_POWER_1P, game)) {
-    button = makeLinkButton(px + 170, py, getActionName(A_POWER_1P), parent);
+    button = makeLinkButton(px + 255, py, getActionName(A_POWER_1P), parent);
     button.title = '3pw to get a priest';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1204,7 +1240,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
   if(player.getFaction().canTakeAction(player, A_POWER_2W, game)) {
-    button = makeLinkButton(px + 220, py, getActionName(A_POWER_2W), parent);
+    button = makeLinkButton(px + 330, py, getActionName(A_POWER_2W), parent);
     button.title = '4pw to get 2 workers';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1212,7 +1248,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
   if(player.getFaction().canTakeAction(player, A_POWER_7C, game)) {
-    button = makeLinkButton(px + 275, py, getActionName(A_POWER_7C), parent);
+    button = makeLinkButton(px + 410, py, getActionName(A_POWER_7C), parent);
     button.title = '4pw to get 7 coins';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1220,7 +1256,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
   if(player.getFaction().canTakeAction(player, A_POWER_SPADE, game)) {
-    button = makeLinkButton(px + 330, py, 'pow1dig', parent);
+    button = makeLinkButton(px + 485, py, 'pow1dig', parent);
     button.title = '4pw to get 1 spade. Note: by default also builds where you click, use the selector to change to other transform actions.';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1229,7 +1265,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
   if(player.getFaction().canTakeAction(player, A_POWER_2SPADE, game)) {
-    button = makeLinkButton(px + 395, py, 'pow2dig', parent);
+    button = makeLinkButton(px + 580, py, 'pow2dig', parent);
     button.title = '6pw to get 2 spades. Note: by default also builds where you click, use the selector to change to other transform actions.';
     button.style.backgroundColor = '#ff4';
     button.onclick = function() {
@@ -1238,15 +1274,17 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
 
-  makeText(px, py + 16, 'CONVERT: ', parent);
-  addSimpleActionButton(px + 90, py+16, 'burn', A_BURN).title = 'sacrifice power from second bowl to get one in your main bowl';
-  addSimpleActionButton(px+130, py+16, '1pw->c', A_CONVERT_1PW_1C);
-  addSimpleActionButton(px+188, py+16, '3pw->w', A_CONVERT_3PW_1W);
-  addSimpleActionButton(px+247, py+16, '5pw->p', A_CONVERT_5PW_1P);
-  addSimpleActionButton(px+306, py+16, 'p->w', A_CONVERT_1P_1W);
-  addSimpleActionButton(px+348, py+16, 'w->c', A_CONVERT_1W_1C);
+  convY = 32;
+  makeText(px, py + convY, 'CONVERT: ', parent);
+  addSimpleActionButton(px+135, py+convY, 'burn', A_BURN).title = 'sacrifice power from second bowl to get one in your main bowl';
+  addSimpleActionButton(px+195, py+convY, '1pw->c', A_CONVERT_1PW_1C);
+  addSimpleActionButton(px+282, py+convY, '3pw->w', A_CONVERT_3PW_1W);
+  addSimpleActionButton(px+375, py+convY, '5pw->p', A_CONVERT_5PW_1P);
+  addSimpleActionButton(px+465, py+convY, 'p->w', A_CONVERT_1P_1W);
+  addSimpleActionButton(px+530, py+convY, 'w->c', A_CONVERT_1W_1C);
 
-  makeText(px, py + 32, 'PRIEST: ', parent);
+  prieY = 64;
+  makeText(px, py + prieY, 'PRIEST: ', parent);
 
   var sendPriestFun = function(type) {
     var fun = function(cult) {
@@ -1268,17 +1306,18 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
   };
 
-  var priestbutton = makeLinkButton(px + 90, py + 32, 'cult', parent);
+  var priestbutton = makeLinkButton(px + 135, py + prieY, 'cult', parent);
   priestbutton.onclick = sendPriestAutoFun;
   priestbutton.title = 'send priest to highest free value on a cult track';
-  var priest1button = makeLinkButton(px + 140, py + 32, getActionName(A_CULT_PRIEST1), parent);
+  var priest1button = makeLinkButton(px + 210, py + prieY, getActionName(A_CULT_PRIEST1), parent);
   priest1button.onclick = bind(sendPriestFun, A_CULT_PRIEST1);
-  var priest2button = makeLinkButton(px + 190, py + 32, getActionName(A_CULT_PRIEST2), parent);
+  var priest2button = makeLinkButton(px + 285, py + prieY, getActionName(A_CULT_PRIEST2), parent);
   priest2button.onclick = bind(sendPriestFun, A_CULT_PRIEST2);
-  var priest3button = makeLinkButton(px + 240, py + 32, getActionName(A_CULT_PRIEST3), parent);
+  var priest3button = makeLinkButton(px + 360, py + prieY, getActionName(A_CULT_PRIEST3), parent);
   priest3button.onclick = bind(sendPriestFun, A_CULT_PRIEST3);
 
-  makeText(px, py + 48, 'TRANSFORM: ', parent);
+  tranY = 96;
+  makeText(px, py + tranY, 'TRANSFORM: ', parent);
 
   function addDigButton(px, py, text, num, type) {
     var digbutton = makeLinkButton(px, py, text, parent);
@@ -1289,18 +1328,18 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
     return digbutton;
   }
-  var build2button = makeLinkButton(px + 90, py + 48, 'dig&build', parent);
+  var build2button = makeLinkButton(px + 135, py + tranY, 'dig&build', parent);
   build2button.title = 'Dig on terrain and build, or other terrain transformation actions.';
   build2button.style.color = 'brown';
   build2button.onclick = bind(digAndBuildFun, DBM_BUILD, 'click where to dig&build');
 
-  var build3button = makeLinkButton(px + 175, py + 48, 'dig', parent);
+  var build3button = makeLinkButton(px + 260, py + tranY, 'dig', parent);
   build3button.title = 'Dig on terrain with various transformation actions. Same as dig&build, except it defaults the selector to another action than transform&build.';
   build3button.style.color = 'brown';
   build3button.onclick = bind(digAndBuildFun, digAndBuildMode == DBM_BUILD ? DBM_COLOR : digAndBuildMode, 'click where to dig');
 
 
-  var buildbutton = makeLinkButton(px + 210, py + 48, getActionName(A_BUILD), parent);
+  var buildbutton = makeLinkButton(px + 315, py + tranY, getActionName(A_BUILD), parent);
   buildbutton.title = 'build a dwelling (D) on a tile that is already your color';
   buildbutton.style.color = 'brown';
   buildbutton.onclick = function() {
@@ -1313,21 +1352,24 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     queueHumanState(HS_MAP, 'click where to build dwelling', fun);
   };
 
-  makeText(px, py + 64, 'UPGRADE: ', parent);
-  var upgr1button = makeLinkButton(px + 90, py + 64, 'upgr1', parent);
+  upgrY = 128;
+  makeText(px, py + upgrY, 'UPGRADE: ', parent);
+  var upgr1button = makeLinkButton(px + 135, py + upgrY, 'upgr1', parent);
   upgr1button.title = 'upgrade to trading post (TP) or to stronghold (SH)';
   upgr1button.onclick = upgrade1fun;
-  var upgr2button = makeLinkButton(px + 140, py + 64, 'upgr2', parent);
+  var upgr2button = makeLinkButton(px + 210, py + upgrY, 'upgr2', parent);
   upgr2button.title = 'upgrade to temple (TE) or to sanctuary (SA)';
   upgr2button.onclick = upgrade2fun;
 
-  makeText(px, py + 80, 'ADVANCE: ', parent);
-  if(player.digging < player.maxdigging) addSimpleActionButton(px + 90, py + 80, getActionName(A_ADV_DIG), A_ADV_DIG);
-  if(player.shipping < player.maxshipping) addSimpleActionButton(px + ((player.digging < player.maxdigging) ? 170 : 90), py + 80, getActionName(A_ADV_SHIP), A_ADV_SHIP);
+  advaY = 160;
+  makeText(px, py + advaY, 'ADVANCE: ', parent);
+  if(player.digging < player.maxdigging) addSimpleActionButton(px + 135, py + advaY, getActionName(A_ADV_DIG), A_ADV_DIG);
+  if(player.shipping < player.maxshipping) addSimpleActionButton(px + ((player.digging < player.maxdigging) ? 255 : 135), py + advaY, getActionName(A_ADV_SHIP), A_ADV_SHIP);
 
   var px2;
 
-  makeText(px, py + 96, 'TILES: ', parent);
+  tileY = 192;
+  makeText(px, py + tileY, 'TILES: ', parent);
   function addCultButton(px, py, text, num, type) {
     var button = makeLinkButton(px, py, text, parent);
     button.onclick = function() {
@@ -1343,40 +1385,41 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   }
   px2 = px + 90;
   if(player.bonustile == T_BON_SPADE_2C && !player.octogons[A_BONUS_SPADE]) {
-    button = addDigButton(px2, py + 96, getActionName(A_BONUS_SPADE), 1, A_BONUS_SPADE);
+    button = addDigButton(px2, py + tileY, getActionName(A_BONUS_SPADE), 1, A_BONUS_SPADE);
     button.style.color = 'red';
     button.title = 'dig action from the bonus dig tile. Note: by default also builds where you click, use the selector to change to other transform actions.';
     px2 += 75;
   }
   if(player.bonustile == T_BON_CULT_4C && !player.octogons[A_BONUS_CULT]) {
-    button = addCultButton(px2, py + 96, getActionName(A_BONUS_CULT), 1, A_BONUS_CULT);
+    button = addCultButton(px2, py + tileY, getActionName(A_BONUS_CULT), 1, A_BONUS_CULT);
     button.style.color = 'red';
     button.title = 'cult action from the bonus cult tile';
     px2 += 60;
   }
   if(player.favortiles[T_FAV_2W_CULT] && !player.octogons[A_FAVOR_CULT]) {
-    button = addCultButton(px2, py + 96, getActionName(A_FAVOR_CULT), 1, A_FAVOR_CULT);
+    button = addCultButton(px2, py + tileY, getActionName(A_FAVOR_CULT), 1, A_FAVOR_CULT);
     button.style.color = 'red';
     button.title = 'cult action from the favor cult tile';
     px2 += 60;
   }
 
-  makeText(px, py + 112, 'FACTION: ', parent);
+  factY = 224;
+  makeText(px, py + factY, 'FACTION: ', parent);
   px2 = px + 90;
   if(player.faction == F_CHAOS && player.b_sh == 0 && !player.octogons[A_DOUBLE]) {
-    button = addSimpleActionButton(px2, py + 112, getActionName(A_DOUBLE), A_DOUBLE);
+    button = addSimpleActionButton(px2, py + factY, getActionName(A_DOUBLE), A_DOUBLE);
     button.style.color = 'red';
     button.title = 'cult action from the favor cult tile';
     px2 += 60;
   }
   if(player.faction == F_GIANTS && player.b_sh == 0 && !player.octogons[A_GIANTS_2SPADE]) {
-    button = addDigButton(px2, py + 112, getActionName(A_GIANTS_2SPADE), 1, A_GIANTS_2SPADE);
+    button = addDigButton(px2, py + factY, getActionName(A_GIANTS_2SPADE), 1, A_GIANTS_2SPADE);
     button.style.color = 'red';
     button.title = 'giants dig. Note: by default also builds where you click, use the selector to change to other transform actions.';
     px2 += 90;
   }
   if(player.faction == F_NOMADS && player.b_sh == 0 && !player.octogons[A_SANDSTORM]) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_SANDSTORM), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_SANDSTORM), parent);
     button.style.color = 'red';
     button.title = 'sandstorm. Note: by default also builds where you click, use the selector to change to other transform actions.';
     button.onclick = function() {
@@ -1386,11 +1429,11 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.faction == F_ALCHEMISTS) {
-    button = addSimpleActionButton(px2, py + 112, getActionName(A_CONVERT_1VP_1C), A_CONVERT_1VP_1C);
+    button = addSimpleActionButton(px2, py + factY, getActionName(A_CONVERT_1VP_1C), A_CONVERT_1VP_1C);
     px2 += 60;
   }
   if(player.faction == F_MERMAIDS) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_CONNECT_WATER_TOWN), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_CONNECT_WATER_TOWN), parent);
     button.title = 'form a town with the mermaids special ability, by clicking a water tile. This can be done whenever your current action sequence will form a town.';
     button.onclick = function() {
       var fun = function(x, y) {
@@ -1405,13 +1448,13 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.faction == F_AUREN && player.b_sh == 0 && !player.octogons[A_AUREN_CULT]) {
-    button = addCultButton(px2, py + 112, getActionName(A_AUREN_CULT), 2, A_AUREN_CULT);
+    button = addCultButton(px2, py + factY, getActionName(A_AUREN_CULT), 2, A_AUREN_CULT);
     button.style.color = 'red';
     button.title = 'cult action from the auren';
     px2 += 60;
   }
   if(player.faction == F_SWARMLINGS && player.b_sh == 0 && !player.octogons[A_SWARMLINGS_TP]) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_SWARMLINGS_TP), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_SWARMLINGS_TP), parent);
     button.style.color = 'red';
     button.onclick = function() {
       var fun = function(x, y) {
@@ -1425,7 +1468,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.faction == F_WITCHES && player.b_sh == 0 && !player.octogons[A_WITCHES_D]) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_WITCHES_D), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_WITCHES_D), parent);
     button.style.color = 'red';
     button.onclick = function() {
       var fun = function(x, y) {
@@ -1439,7 +1482,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.faction == F_ENGINEERS) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_ENGINEERS_BRIDGE), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_ENGINEERS_BRIDGE), parent);
     button.title = '2wto build a bridge';
     button.onclick = function() {
       prepareAction(new Action(A_ENGINEERS_BRIDGE));
@@ -1448,7 +1491,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.getFaction().canTakeAction(player, A_SHIFT, game)) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_SHIFT), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_SHIFT), parent);
     button.title = Texts.shift1title();
     button.onclick = function() {
       chooseActionColor(new Action(A_SHIFT));
@@ -1456,7 +1499,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
   if(player.getFaction().canTakeAction(player, A_SHIFT2, game)) {
-    button = makeLinkButton(px2, py + 112, getActionName(A_SHIFT2), parent);
+    button = makeLinkButton(px2, py + factY, getActionName(A_SHIFT2), parent);
     button.title = Texts.shift2title();
     button.onclick = function() {
       chooseActionColor(new Action(A_SHIFT2));
@@ -1464,21 +1507,27 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  makeText(px, py + 128, 'PASS: ', parent);
-  var passbutton = makeLinkButton(px + 90, py + 128, getActionName(A_PASS), parent);
+  passY = 256;
+  makeText(px, py + passY, 'PASS: ', parent);
+  var passbutton = makeLinkButton(px + 135, py + passY, getActionName(A_PASS), parent);
   passbutton.onclick = function() {
     prepareAction(new Action(A_PASS));
   };
   passbutton.title = 'Pass for this round. Click on a chosen bonus tile after this, then press execute';
 
 
-  var execbutton = makeExecButton(player, px + 410, py + 100, parent, executeButtonFun, 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.');
+  var execbutton = makeExecButton(player, px + 680, py + 240, parent, executeButtonFun, 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.');
 
-  var clearbutton = makeLinkButton(px + 420, py + 84, 'cancel', parent);
-  clearbutton.title = 'remove last action from your action sequence';
-  clearbutton.onclick = executeButtonClearFun;
+  // var clearbutton = makeLinkButton(px + 630, py + 210, 'cancel', parent);
+  // clearbutton.title = 'remove last action from your action sequence';
+  // clearbutton.onclick = executeButtonClearFun;
+  var clearbutton = makeButton(
+    px + 570, py + 240,
+    'cancel', parent, executeButtonClearFun,
+    'remove last action from your action sequence'
+  );
 
-  var hintbutton = makeLinkButton(px + 480, py + 84, 'hint', parent);
+  var hintbutton = makeLinkButton(px + 720, py + 210, 'hint', parent);
   hintbutton.title = 'show several possible action sequences you can do. This list is what the AIs use to pick their actions from.';
   hintbutton.onclick = function() {
     var actions = getPossibleActions(player, defaultRestrictions);
@@ -1609,7 +1658,7 @@ function drawHud() {
       }
   }
 
-  logEl.style.top = 900 + game.players.length * 205;
+  logEl.style.top = 530;
 
   drawHud2(game.players, mainTileClick);
 }
@@ -1633,7 +1682,7 @@ function drawSaveLoadUI(onlyload) {
   }
 
   if(!onlyload) {
-    button = makeLinkButton(0, 0, 'save', parent);
+    button = makeFaLinkButton(0, 0, 'save', '32px', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
       var els = makePopupUpTextArea();
@@ -1652,7 +1701,7 @@ function drawSaveLoadUI(onlyload) {
     }
   }
 
-  button = makeLinkButton(onlyload ? 0 : 50, 0, 'load', parent);
+  button = makeFaLinkButton(onlyload ? 0 : 50, 0, 'folder-open-o', '32px', parent);
   button.onclick = function() {
     var els = makePopupUpTextArea();
     var el = els[0];
@@ -1679,7 +1728,7 @@ function drawSaveLoadUI(onlyload) {
   }
 
   if(!onlyload) {
-    button = makeLinkButton(100, 0, 'new', parent);
+    button = makeFaLinkButton(100, 0, 'file-o', '32px', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
       var el = makeSizedDiv(50, 50, 400, 150, document.body);
@@ -1701,7 +1750,7 @@ function drawSaveLoadUI(onlyload) {
     }
     button.title = 'Start a new game';
 
-    button = makeLinkButton(150, 0, 'undo', parent);
+    button = makeFaLinkButton(150, 0, 'undo', '32px', parent);
     button.onclick = function() {
       if(undoIndex < 0 || undoIndex >= undoGameStates.length) return;
       if(undoIndex + 1 == undoGameStates.length) undoGameStates.push(saveGameState(game, state, logText));
@@ -1713,7 +1762,7 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Undo last action';
 
-    button = makeLinkButton(200, 0, 'redo', parent);
+    button = makeFaLinkButton(200, 0, 'repeat', '32px', parent);
     button.onclick = function() {
       if(undoIndex < -2 || undoIndex + 2 >= undoGameStates.length) return;
       var undoGameState = undoGameStates[undoIndex + 2];
@@ -1724,6 +1773,7 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Redo undone action';
 
+    // FIXME: This help menu is newly added
    button = makeLinkButton(250, 0, 'help', parent);
     button.onclick = function() {
       var el = makeSizedDiv(50, 50, 400, 235, document.body);
@@ -1746,7 +1796,100 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Show user interface help';
 
-    var debugbutton = makeLinkButton(1040, 5, 'debug', uiElement);
+
+    // toggle UIs
+    var hideAllUIs = function (except) {
+      var i;
+      var ids = [
+        'human-ui',
+        'bonus',
+        'cult',
+        'favor',
+        'town',
+        'round',
+        'final',
+        'players',
+      ];
+      for (i = 0; i < ids.length; i += 1) {
+        if (except !== ids[i]) {
+          toggleDisplay(document.getElementById(ids[i]), 'none');
+        }
+      }
+    };
+
+    // UI
+    button = makeFaLinkButton(300, 0, 'list-alt', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('human-ui');
+      toggleDisplay(document.getElementById('human-ui'), 'block');
+    };
+    button.title = 'Open control panel';
+
+    // bonus tile
+    button = makeFaLinkButton(350, 0, 'share-square-o', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('bonus');
+      toggleDisplay(document.getElementById('bonus'), 'block');
+    };
+    button.title = 'See bonus tiles';
+
+    // cult track
+    button = makeFaLinkButton(400, 0, 'users', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('cult');
+      toggleDisplay(document.getElementById('cult'), 'block');
+    };
+    button.title = 'See cult track';
+
+    // favor tiles
+    button = makeFaLinkButton(450, 0, 'thumbs-o-up', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('favor');
+      toggleDisplay(document.getElementById('favor'), 'block');
+    };
+    button.title = 'See favor tils';
+
+    // town
+    button = makeFaLinkButton(500, 0, 'fort-awesome', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('town');
+      toggleDisplay(document.getElementById('town'), 'block');
+    };
+    button.title = 'See town bonus';
+
+    // round
+    button = makeFaLinkButton(550, 0, 'flag-o', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('round');
+      toggleDisplay(document.getElementById('round'), 'block');
+    };
+    button.title = 'See round bonus';
+
+    // final
+    button = makeFaLinkButton(600, 0, 'flag-checkered', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('final');
+      toggleDisplay(document.getElementById('final'), 'block');
+    };
+    button.title = 'See final bonus';
+
+    // players
+    button = makeFaLinkButton(650, 0, 'address-card-o', '32px', parent);
+    button.onclick = function() {
+      hideAllUIs('players');
+      toggleDisplay(document.getElementById('players'), 'block');
+    };
+    button.title = 'See player details';
+
+    // hide all
+    button = makeFaLinkButton(700, 0, 'remove', '32px', parent);
+    button.style.color = 'red';
+    button.onclick = function() {
+      hideAllUIs();
+    };
+    button.title = 'Hide UI';
+
+    var debugbutton = makeLinkButton(800, 5, 'debug', uiElement);
     debugbutton.onclick = function() {
       if(state.type == S_PRE) return;
       drawDebugActions(0, 563, 850);
