@@ -1,3 +1,7 @@
+body * {
+    box-sizing: border-box;
+}
+
 #bonus,
 #favor,
 #cult,
@@ -14,8 +18,22 @@
     z-index: 1;
 }
 
+#popup {
+    position: relative;
+    top: 30px;
+    z-index: 1;
+}
+
+#hud {
+    position: relative;
+}
+
+#human-ui {
+    top: 532px;
+}
+
 #human-ui > div {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 #action {
@@ -26,11 +44,37 @@
     line-height: 20px;
     padding: 2px;
     z-index: 0;
+    position: relative;
+}
+
+#action-seq {
+    width: calc(100% - 200px);
+    height: 100%;
+}
+
+#cancel-action {
+    width: 80px;
+    height: 28px;
+    line-height: 28px;
+    cursor: pointer;
+    background-color: darkred;
+    color: white;
+    text-align: center;
+}
+
+#execute-action {
+    width: 120px;
+    height: 28px;
+    line-height: 28px;
+    cursor: pointer;
+    background-color: darkgreen;
+    color: white;
+    text-align: center;
 }
 
 #log {
     width: 820px;
-    height: 100px;
+    height: 180px;
     overflow-y: auto;
     border: 1px solid darkgray;
     z-index: 0;

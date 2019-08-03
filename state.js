@@ -677,7 +677,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   else if(this.type == S_ACTION) {
     var player = game.players[this.currentPlayer];
     setHelp('player ' + player.name + ' action');
-    actionEl.innerHTML = '';
+    actionSeqEl.innerHTML = '';
     callbackState = CS_ACTOR;
     player.actor.doAction(this.currentPlayer, callback);
   }

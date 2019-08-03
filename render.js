@@ -45,9 +45,26 @@ helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
 helpEl.style.whiteSpace = 'nowrap';
 
+
 var actionEl = makeDiv(0, 500, document.body);
 actionEl.id = 'action';
-actionEl.style.whiteSpace = 'nowrap';
+
+const actionSeqEl = makeDiv(0, 0, actionEl);
+actionSeqEl.id = 'action-seq';
+actionSeqEl.style.whiteSpace = 'nowrap';
+
+const cancelActionEl = makeDiv(620, -5, actionEl);
+cancelActionEl.onclick = () => executeButtonClearFun(); // avoid load order issue
+cancelActionEl.title = 'remove last action from your action sequence';
+cancelActionEl.id = 'cancel-action';
+cancelActionEl.innerHTML = '< X';
+
+const executeActionEl = makeDiv(700, -5, actionEl);
+executeActionEl.onclick = () => executeButtonFun();
+executeActionEl.title = 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.';
+executeActionEl.id = 'execute-action';
+executeActionEl.innerHTML = '[ Execute ]';
+
 
 var logEl = makeDiv(0, 1920, document.body);
 logEl.id = 'log';
@@ -63,8 +80,8 @@ var hudSubElement = function (id) {
   if (el) { return el; }
   el = makeElement(hudElement, 'div');
   el.id = id;
-  return el
-}
+  return el;
+};
 
 function showGreyDialog(text, px, py) {
   if(!px) px = 400;
@@ -124,7 +141,7 @@ function addLog() {
 
 function displayLog() {
   logEl.innerHTML = trimEmptyLines(logText);
-  actionEl.innerHTML = lastLogLine;
+  actionSeqEl.innerHTML = lastLogLine;
   logEl.scrollTop = 99999;
 }
 
@@ -138,7 +155,7 @@ function popLog() {
   var br = logText.indexOf('<br/>');
   logText = logText.substring(br + 5);
   logEl.innerHTML = logText;
-  actionEl.innerHTML = '';
+  actionSeqEl.innerHTML = '';
 }
 
 function setHelp(text, extravisible) {
@@ -950,7 +967,7 @@ function drawEndGameScoring(px, py) {
   var bg = makeSizedDiv(px, py, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.backgroundColor = '#ffffff';
   bg.style.border = '1px solid black';
-  actionEl.innerHTML = '';
+  actionSeqEl.innerHTML = '';
 
   makeText(px + 5, py + 5, '<b>Game over</b> (detailed log is at the bottom of the web page)', parent);
   makeText(px + 5, py + 25, 'Final scores (hover for more details):', parent);
@@ -1082,10 +1099,10 @@ function drawHumanUI(x, y, playerIndex) {
   var parent = hudSubElement('human-ui');
   var player = game.players[playerIndex];
 
-  ACTIONPANELX = px - 5;
-  ACTIONPANELY = py - 5;
-  ACTIONPANELW = 800;
-  ACTIONPANELH = 300;
+  ACTIONPANELX = px - 8;
+  ACTIONPANELY = py - 10;
+  ACTIONPANELW = 820;
+  ACTIONPANELH = 180;
   var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent)
   bg.style.border = '1px solid black';
   bg.style.backgroundColor = 'white';
@@ -1174,13 +1191,15 @@ function drawHumanUI(x, y, playerIndex) {
       button.onclick = clearHumanState;
     }
     else if(humanstate == HS_CULT) {
-      makeText(px, py + 2, 'click on a cult track, right of the map, to continue', parent);
+      makeText(px, py + 2, 'click on a cult track to continue', parent);
       //TODO: draw something better to indicate cult
       //makeText(cx - 20, cy, 'cult', parent);
       drawOrb(cx - 20, cy, R, parent);
       drawOrb(cx - 5, cy, B, parent);
       drawOrb(cx + 10, cy, U, parent);
       drawOrb(cx + 25, cy, S, parent);
+      // e.g. firetransform
+      document.getElementById('cult').style.display = 'block';
     }
     else if(humanstate == HS_BONUS_TILE) {
       // FIXME
@@ -1192,8 +1211,10 @@ function drawHumanUI(x, y, playerIndex) {
       }, 'OK');
     }
     else if(humanstate == HS_FAVOR_TILE) {
-      makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
-      renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined);
+      // makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
+      // renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined);
+      makeText(px, py + 2, 'click on a favor tile on the left to continue.', parent);
+      toggleDisplay(document.getElementById('favor'), 'block');
     }
     else if(humanstate == HS_TOWN_TILE) {
       makeText(px, py + 2, 'click on a town tile on the left to continue. An example is shown below.', parent);
@@ -1220,6 +1241,8 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   }
 
   var button;
+  let prevY = 0;
+  const lineHeight = 24;
 
   makeText(px, py, 'POWER:', parent);
   if(player.getFaction().canTakeAction(player, A_POWER_BRIDGE, game)) {
@@ -1274,7 +1297,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
 
-  convY = 32;
+  convY = prevY += lineHeight;
   makeText(px, py + convY, 'CONVERT: ', parent);
   addSimpleActionButton(px+135, py+convY, 'burn', A_BURN).title = 'sacrifice power from second bowl to get one in your main bowl';
   addSimpleActionButton(px+195, py+convY, '1pw->c', A_CONVERT_1PW_1C);
@@ -1283,40 +1306,40 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   addSimpleActionButton(px+465, py+convY, 'p->w', A_CONVERT_1P_1W);
   addSimpleActionButton(px+530, py+convY, 'w->c', A_CONVERT_1W_1C);
 
-  prieY = 64;
-  makeText(px, py + prieY, 'PRIEST: ', parent);
+  // prieY = 64;
+  // makeText(px, py + prieY, 'PRIEST: ', parent);
 
-  var sendPriestFun = function(type) {
-    var fun = function(cult) {
-      clearHumanState();
-      var action = new Action(type);
-      action.cult = cult;
-      prepareAction(action);
-    };
-    queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
-  };
-  var sendPriestAutoFun = function(type) {
-    var fun = function(cult) {
-      clearHumanState();
-      var type = getAutoSendPriestCultAction(player, cult);
-      var action = new Action(type);
-      action.cult = cult;
-      prepareAction(action);
-    };
-    queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
-  };
+  // var sendPriestFun = function(type) {
+  //   var fun = function(cult) {
+  //     clearHumanState();
+  //     var action = new Action(type);
+  //     action.cult = cult;
+  //     prepareAction(action);
+  //   };
+  //   queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
+  // };
+  // var sendPriestAutoFun = function(type) {
+  //   var fun = function(cult) {
+  //     clearHumanState();
+  //     var type = getAutoSendPriestCultAction(player, cult);
+  //     var action = new Action(type);
+  //     action.cult = cult;
+  //     prepareAction(action);
+  //   };
+  //   queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
+  // };
 
-  var priestbutton = makeLinkButton(px + 135, py + prieY, 'cult', parent);
-  priestbutton.onclick = sendPriestAutoFun;
-  priestbutton.title = 'send priest to highest free value on a cult track';
-  var priest1button = makeLinkButton(px + 210, py + prieY, getActionName(A_CULT_PRIEST1), parent);
-  priest1button.onclick = bind(sendPriestFun, A_CULT_PRIEST1);
-  var priest2button = makeLinkButton(px + 285, py + prieY, getActionName(A_CULT_PRIEST2), parent);
-  priest2button.onclick = bind(sendPriestFun, A_CULT_PRIEST2);
-  var priest3button = makeLinkButton(px + 360, py + prieY, getActionName(A_CULT_PRIEST3), parent);
-  priest3button.onclick = bind(sendPriestFun, A_CULT_PRIEST3);
+  // var priestbutton = makeLinkButton(px + 135, py + prieY, 'cult', parent);
+  // priestbutton.onclick = sendPriestAutoFun;
+  // priestbutton.title = 'send priest to highest free value on a cult track';
+  // var priest1button = makeLinkButton(px + 210, py + prieY, getActionName(A_CULT_PRIEST1), parent);
+  // priest1button.onclick = bind(sendPriestFun, A_CULT_PRIEST1);
+  // var priest2button = makeLinkButton(px + 285, py + prieY, getActionName(A_CULT_PRIEST2), parent);
+  // priest2button.onclick = bind(sendPriestFun, A_CULT_PRIEST2);
+  // var priest3button = makeLinkButton(px + 360, py + prieY, getActionName(A_CULT_PRIEST3), parent);
+  // priest3button.onclick = bind(sendPriestFun, A_CULT_PRIEST3);
 
-  tranY = 96;
+  tranY = prevY += lineHeight;
   makeText(px, py + tranY, 'TRANSFORM: ', parent);
 
   function addDigButton(px, py, text, num, type) {
@@ -1352,7 +1375,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     queueHumanState(HS_MAP, 'click where to build dwelling', fun);
   };
 
-  upgrY = 128;
+  upgrY = prevY += lineHeight;
   makeText(px, py + upgrY, 'UPGRADE: ', parent);
   var upgr1button = makeLinkButton(px + 135, py + upgrY, 'upgr1', parent);
   upgr1button.title = 'upgrade to trading post (TP) or to stronghold (SH)';
@@ -1361,14 +1384,14 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   upgr2button.title = 'upgrade to temple (TE) or to sanctuary (SA)';
   upgr2button.onclick = upgrade2fun;
 
-  advaY = 160;
+  advaY = prevY += lineHeight;
   makeText(px, py + advaY, 'ADVANCE: ', parent);
   if(player.digging < player.maxdigging) addSimpleActionButton(px + 135, py + advaY, getActionName(A_ADV_DIG), A_ADV_DIG);
   if(player.shipping < player.maxshipping) addSimpleActionButton(px + ((player.digging < player.maxdigging) ? 255 : 135), py + advaY, getActionName(A_ADV_SHIP), A_ADV_SHIP);
 
   var px2;
 
-  tileY = 192;
+  tileY = prevY += lineHeight;
   makeText(px, py + tileY, 'TILES: ', parent);
   function addCultButton(px, py, text, num, type) {
     var button = makeLinkButton(px, py, text, parent);
@@ -1380,10 +1403,12 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
         prepareAction(action);
       };
       queueHumanState(HS_CULT, 'click on which cult track to increase', fun);
+      // fixme: sometimes toggle fails?
+      document.getElementById('cult').style.display = 'block';
     };
     return button;
   }
-  px2 = px + 90;
+  px2 = px + 135;
   if(player.bonustile == T_BON_SPADE_2C && !player.octogons[A_BONUS_SPADE]) {
     button = addDigButton(px2, py + tileY, getActionName(A_BONUS_SPADE), 1, A_BONUS_SPADE);
     button.style.color = 'red';
@@ -1403,7 +1428,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  factY = 224;
+  factY = prevY += lineHeight;
   makeText(px, py + factY, 'FACTION: ', parent);
   px2 = px + 90;
   if(player.faction == F_CHAOS && player.b_sh == 0 && !player.octogons[A_DOUBLE]) {
@@ -1507,27 +1532,27 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  passY = 256;
-  makeText(px, py + passY, 'PASS: ', parent);
-  var passbutton = makeLinkButton(px + 135, py + passY, getActionName(A_PASS), parent);
-  passbutton.onclick = function() {
-    prepareAction(new Action(A_PASS));
-  };
-  passbutton.title = 'Pass for this round. Click on a chosen bonus tile after this, then press execute';
+  // passY = 256;
+  // makeText(px, py + passY, 'PASS: ', parent);
+  // var passbutton = makeLinkButton(px + 135, py + passY, getActionName(A_PASS), parent);
+  // passbutton.onclick = function() {
+  //   prepareAction(new Action(A_PASS));
+  // };
+  // passbutton.title = 'Pass for this round. Click on a chosen bonus tile after this, then press execute';
 
 
-  var execbutton = makeExecButton(player, px + 680, py + 240, parent, executeButtonFun, 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.');
+  // var execbutton = makeExecButton(player, px + 680, py + 120, parent, executeButtonFun, 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.');
 
   // var clearbutton = makeLinkButton(px + 630, py + 210, 'cancel', parent);
   // clearbutton.title = 'remove last action from your action sequence';
   // clearbutton.onclick = executeButtonClearFun;
-  var clearbutton = makeButton(
-    px + 570, py + 240,
-    'cancel', parent, executeButtonClearFun,
-    'remove last action from your action sequence'
-  );
+  // var clearbutton = makeButton(
+  //   px + 570, py + 120,
+  //   'cancel', parent, executeButtonClearFun,
+  //   'remove last action from your action sequence'
+  // );
 
-  var hintbutton = makeLinkButton(px + 720, py + 210, 'hint', parent);
+  var hintbutton = makeLinkButton(px + 720, py + 1850, 'hint', parent);
   hintbutton.title = 'show several possible action sequences you can do. This list is what the AIs use to pick their actions from.';
   hintbutton.onclick = function() {
     var actions = getPossibleActions(player, defaultRestrictions);
@@ -1820,7 +1845,7 @@ function drawSaveLoadUI(onlyload) {
     // UI
     button = makeFaLinkButton(300, 0, 'list-alt', '32px', parent);
     button.onclick = function() {
-      hideAllUIs('human-ui');
+      // hideAllUIs('human-ui');
       toggleDisplay(document.getElementById('human-ui'), 'block');
     };
     button.title = 'Open control panel';
@@ -1914,7 +1939,7 @@ function resetAndBeginNewGame() {
     uiElement.innerHTML = '';
     hudElement.innerHTML = '';
     popupElement.innerHTML = '';
-    actionEl.innerHTML = '';
+    actionSeqEl.innerHTML = '';
     helpEl.innerHTML = '';
     logEl.innerHTML = '';
     logText = '';
