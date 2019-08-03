@@ -38,7 +38,7 @@ body * {
 
 #action {
     width: 820px;
-    background-color: lightgray;
+    background-color: #eee;
     border: 1px solid darkgray;
     height: 20px;
     line-height: 20px;
@@ -78,4 +78,11 @@ body * {
     overflow-y: auto;
     border: 1px solid darkgray;
     z-index: 0;
+}
+
+#doc {
+    height: 200px;
+    border: 1px solid gray;
+    overflow-Y: scroll;
+    margin-bottom: 5px;
 }

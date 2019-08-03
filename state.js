@@ -613,7 +613,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   if(this.type == S_PRE) {
     // load game if auto save
     if(!(preferences.autosave && autoLoad())) {
-      renderPreScreen(0, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
+      renderPreScreen(0, 135, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
       //transitionIfNoActorCallback();
     }
   }

@@ -48,6 +48,7 @@ helpEl.style.whiteSpace = 'nowrap';
 
 var actionEl = makeDiv(0, 500, document.body);
 actionEl.id = 'action';
+actionEl.style.display = 'none';
 
 const actionSeqEl = makeDiv(0, 0, actionEl);
 actionSeqEl.id = 'action-seq';
@@ -68,6 +69,7 @@ executeActionEl.innerHTML = '[ Execute ]';
 
 var logEl = makeDiv(0, 1920, document.body);
 logEl.id = 'log';
+logEl.style.display = 'none';
 
 //UI that pops up temporarily sometimes
 var popupElement =  document.createElement('div');
@@ -110,6 +112,32 @@ function showGreyDialogAtMouse(text, e) {
   showGreyDialog(text, pos[0], pos[1]);
 }
 
+function showLoadGamePopup() {
+  var els = makePopupUpTextArea();
+  var el = els[0];
+  var area = els[1];
+
+  makeText(5, 5, 'Paste the gamestate text in the field, then press Load to load the game. It only works if the text is valid. ' +
+           'This also supports logs from games from terra.snellman.net: on there press "Load full log", select all, and paste it in here.', el);
+
+  area.select();
+
+  var button2 = makeButton(315, 450, 'Load', el, function() {
+    var game = deSerializeGameState(area.value);
+    if(game) {
+      popupElement.removeChild(el);
+      loadGameStateHard(game);
+      if(!game.logText) addLog('<br/>Loaded a game without log<br/>');
+    } else {
+    }
+  }, 'Load');
+
+  var button3 = makeButton(425, 450, 'Cancel', el, function() {
+    popupElement.removeChild(el);
+  }, 'Cancel');
+};
+
+
 //hex grid coordinates to pixel coordinates
 //the result is the center of where the hex cell should be
 //hex grid uses the type of coordinate system where odd and even rows are different
@@ -133,10 +161,11 @@ var logColored = false; //coloredlog
 
 function addLog() {
   var text = Array.prototype.join.call(arguments, '<br/>');
+  var singleLineText = Array.prototype.join.call(arguments, '\t');
   if (!text) { return; }
   if(logUpsideDown) logText = text + '<br/>' + logText;
   else logText += '<br/>' + text;
-  lastLogLine = text;
+  lastLogLine = singleLineText;
 }
 
 function displayLog() {
@@ -1111,10 +1140,10 @@ function drawHumanUI(x, y, playerIndex) {
   toggleDisplay(document.getElementById('human-ui'), 'block');
   if(showingNextButtonPanel) {
     // var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
-    var bg = makeSizedDiv(400, 400, 100, 100, parent);
-    bg.id = 'next';
-    bg.style.backgroundColor = 'white';
-    bg.style.border = '1px solid black';
+    // var bg = makeSizedDiv(400, 400, 100, 100, parent);
+    // bg.id = 'next';
+    // bg.style.backgroundColor = 'white';
+    // bg.style.border = '1px solid black';
     var cx = ACTIONPANELX + ACTIONPANELW / 2;
     var cy = ACTIONPANELY + ACTIONPANELH / 2;
     var button = makeButton(cx - 105, cy - 16, 'Next', parent, nextButtonFun, 'Next player');
@@ -1552,16 +1581,16 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   //   'remove last action from your action sequence'
   // );
 
-  var hintbutton = makeLinkButton(px + 720, py + 1850, 'hint', parent);
-  hintbutton.title = 'show several possible action sequences you can do. This list is what the AIs use to pick their actions from.';
-  hintbutton.onclick = function() {
-    var actions = getPossibleActions(player, defaultRestrictions);
-    var text = '';
-    for(var i = 0; i < actions.length; i++) {
-      text += actionsToString(actions[i]) + '\n';
-    }
-    alert(text);
-  };
+  // var hintbutton = makeLinkButton(px + 720, py + 1850, 'hint', parent);
+  // hintbutton.title = 'show several possible action sequences you can do. This list is what the AIs use to pick their actions from.';
+  // hintbutton.onclick = function() {
+  //   var actions = getPossibleActions(player, defaultRestrictions);
+  //   var text = '';
+  //   for(var i = 0; i < actions.length; i++) {
+  //     text += actionsToString(actions[i]) + '\n';
+  //   }
+  //   alert(text);
+  // };
 }
 
 //IE hack: IE refuses to have onclick on transparent elements. But first line of tiles.png is see-through. So use it as bg image.
@@ -1662,6 +1691,20 @@ function makeButton(x, y, label, parentEl, clickfun, tooltip, parent) {
   return [bg, labelDiv, button];
 }
 
+function makePopupUpTextArea() {
+  var el = makeSizedDiv(50, 50, 540, 500, popupElement);
+  el.style.backgroundColor = 'white';
+  el.style.border = '1px solid black';
+
+  var area = makeElement(el, 'textarea');
+  area.style.position = 'absolute';
+  area.style.top = 80;
+  area.style.left = 20;
+  area.style.width = 500;
+  area.style.height = 300;
+  return [el, area];
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1688,23 +1731,17 @@ function drawHud() {
   drawHud2(game.players, mainTileClick);
 }
 
+function drawAction() {
+  document.getElementById('action').style.display = 'block';
+}
+
+function hideAction() {
+  document.getElementById('action').style.display = 'none';
+}
+
 function drawSaveLoadUI(onlyload) {
   var parent = uiElement;
   var button;
-
-  function makePopupUpTextArea() {
-    var el = makeSizedDiv(50, 50, 540, 500, popupElement);
-    el.style.backgroundColor = 'white';
-    el.style.border = '1px solid black';
-
-    var area = makeElement(el, 'textarea');
-    area.style.position = 'absolute';
-    area.style.top = 80;
-    area.style.left = 20;
-    area.style.width = 500;
-    area.style.height = 300;
-    return [el, area];
-  }
 
   if(!onlyload) {
     button = makeFaLinkButton(0, 0, 'save', '32px', parent);
@@ -1726,33 +1763,13 @@ function drawSaveLoadUI(onlyload) {
     }
   }
 
-  button = makeFaLinkButton(onlyload ? 0 : 50, 0, 'folder-open-o', '32px', parent);
-  button.onclick = function() {
-    var els = makePopupUpTextArea();
-    var el = els[0];
-    var area = els[1];
+  // button = makeFaLinkButton(onlyload ? 0 : 50, 0, 'folder-open-o', '32px', parent);
 
-    makeText(5, 5, 'Paste the gamestate text in the field, then press Load to load the game. It only works if the text is valid. ' +
-        'This also supports logs from games from terra.snellman.net: on there press "Load full log", select all, and paste it in here.', el);
-
-    area.select();
-
-    var button2 = makeButton(315, 450, 'Load', el, function() {
-      var game = deSerializeGameState(area.value);
-      if(game) {
-        popupElement.removeChild(el);
-        loadGameStateHard(game);
-        if(!game.logText) addLog('<br/>Loaded a game without log<br/>');
-      } else {
-      }
-    }, 'Load');
-
-    var button3 = makeButton(425, 450, 'Cancel', el, function() {
-      popupElement.removeChild(el);
-    }, 'Cancel');
-  }
 
   if(!onlyload) {
+    button = makeFaLinkButton(50, 0, 'folder-open-o', '32px', parent);
+    button.onclick = showLoadGamePopup;
+
     button = makeFaLinkButton(100, 0, 'file-o', '32px', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
@@ -1944,6 +1961,10 @@ function resetAndBeginNewGame() {
     logEl.innerHTML = '';
     logText = '';
     lastLogLine = '';
+
+    actionEl.style.display = 'none';
+    logEl.style.display = 'none';
+
     beginGame();
   }, 0);
 }

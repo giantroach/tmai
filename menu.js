@@ -240,7 +240,11 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     if(gameTypeDropDown.selectedIndex == 3) quickButtonFun(params);
   }), 'Start a new game');
 
-  makeText(px, py + 480 + 17, '<h3>Documentation:</h3>' +
+  makeButton(px + 120, ppy, 'Load', parent, showLoadGamePopup);
+
+  const docEl = makeText(px, py + 480 + 17, '<h3>Documentation:</h3>', parent);
+  docEl.id = 'doc';
+  docEl.innerHTML = '<h3>Documentation:</h3>' +
     '<h4>Updates</h4>' +
      '<p>20171014: Updated loon lake to final version (1.6), and added fjords map beta (being designed in bgg thread). <p/>' +
      '<p>20170822: AI_Level5 processing improvements.  Default to AI_Level5. <p/>' +
@@ -351,7 +355,7 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     '</p>' +
     '<h4></h4>' +
     '<p></p>' +
-    '', parent);
+    '';
 
 }
 ////////////////////////////////////////////////////////////////////////////////
