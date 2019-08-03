@@ -1744,6 +1744,9 @@ function drawSaveLoadUI(onlyload) {
   var button;
 
   if(!onlyload) {
+    logEl.style.display = 'block';
+    actionEl.style.display = 'block';
+
     button = makeFaLinkButton(0, 0, 'save', '32px', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
@@ -1760,13 +1763,8 @@ function drawSaveLoadUI(onlyload) {
       var button2 = makeButton(425, 450, 'Done', el, function() {
         popupElement.removeChild(el);
       }, 'Done');
-    }
-  }
+    };
 
-  // button = makeFaLinkButton(onlyload ? 0 : 50, 0, 'folder-open-o', '32px', parent);
-
-
-  if(!onlyload) {
     button = makeFaLinkButton(50, 0, 'folder-open-o', '32px', parent);
     button.onclick = showLoadGamePopup;
 
