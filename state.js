@@ -613,7 +613,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   if(this.type == S_PRE) {
     // load game if auto save
     if(!(preferences.autosave && autoLoad())) {
-      renderPreScreen(0, 300, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
+      renderPreScreen(0, 135, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
       //transitionIfNoActorCallback();
     }
   }
@@ -677,7 +677,7 @@ State.prototype.executeActor = function(callback, transitionIfNoActorCallback) {
   else if(this.type == S_ACTION) {
     var player = game.players[this.currentPlayer];
     setHelp('player ' + player.name + ' action');
-    actionEl.innerHTML = '';
+    actionSeqEl.innerHTML = '';
     callbackState = CS_ACTOR;
     player.actor.doAction(this.currentPlayer, callback);
   }

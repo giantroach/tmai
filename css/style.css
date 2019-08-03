@@ -1,0 +1,88 @@
+body * {
+    box-sizing: border-box;
+}
+
+#bonus,
+#favor,
+#cult,
+#town,
+#round,
+#final,
+#cult,
+#human-ui,
+#players,
+#summary {
+    position: relative;
+    top: 30px;
+    display: none;
+    z-index: 1;
+}
+
+#popup {
+    position: relative;
+    top: 30px;
+    z-index: 1;
+}
+
+#hud {
+    position: relative;
+}
+
+#human-ui {
+    top: 532px;
+}
+
+#human-ui > div {
+    font-size: 18px;
+}
+
+#action {
+    width: 820px;
+    background-color: #eee;
+    border: 1px solid darkgray;
+    height: 20px;
+    line-height: 20px;
+    padding: 2px;
+    z-index: 0;
+    position: relative;
+}
+
+#action-seq {
+    width: calc(100% - 200px);
+    height: 100%;
+}
+
+#cancel-action {
+    width: 80px;
+    height: 28px;
+    line-height: 28px;
+    cursor: pointer;
+    background-color: darkred;
+    color: white;
+    text-align: center;
+}
+
+#execute-action {
+    width: 120px;
+    height: 28px;
+    line-height: 28px;
+    cursor: pointer;
+    background-color: darkgreen;
+    color: white;
+    text-align: center;
+}
+
+#log {
+    width: 820px;
+    height: 180px;
+    overflow-y: auto;
+    border: 1px solid darkgray;
+    z-index: 0;
+}
+
+#doc {
+    height: 200px;
+    border: 1px solid gray;
+    overflow-Y: scroll;
+    margin-bottom: 5px;
+}

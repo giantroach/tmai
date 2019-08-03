@@ -159,7 +159,7 @@ function prepareAction(action) {
     for(var i = 0; i < num; i++) pactions.push(new Action(A_CONVERT_1W_1P));
   }
 
-  actionEl.innerHTML = actionsToString(pactions);
+  actionSeqEl.innerHTML = actionsToString(pactions);
 
   var cults = []; //for acolytes
   var cultincome = player.getFaction().getActionIncome(player, action.type)[R_FREECULT];
@@ -167,7 +167,7 @@ function prepareAction(action) {
 
   // Recursive because multiple decisions may be required for a single action.
   function tryPrepareAction(action) {
-    actionEl.innerHTML = actionsToString(pactions);
+    actionSeqEl.innerHTML = actionsToString(pactions);
     if(action.type == A_PASS && action.bontile == T_NONE && state.round != 6) {
       var fun = function(tile) {
         if(!isBonusTile(tile)) return;
@@ -215,7 +215,7 @@ function prepareAction(action) {
         cults.push(cult);
         clearHumanState();
         pactions.push(makeActionWithCult(A_ACOLYTES_CULT, cult));
-        actionEl.innerHTML = actionsToString(pactions);
+        actionSeqEl.innerHTML = actionsToString(pactions);
         tryPrepareAction(action);
       };
       queueHumanState(HS_CULT, 'choose cult track to increase', fun);
@@ -313,7 +313,7 @@ function saveUndoState(undoGameState) {
 Human.prototype.doAction = function(playerIndex, callback) {
   executeButtonFun_ = function() {
     var undoGameState = saveGameState(game, state, logText)
-    actionEl.innerHTML = '';
+    actionSeqEl.innerHTML = '';
     var error = callback(playerIndex, pactions);
     pactions = [];
     if(error != '') {
@@ -326,7 +326,7 @@ Human.prototype.doAction = function(playerIndex, callback) {
   };
   executeButtonClearFun_ = function() {
     pactions.pop();
-    actionEl.innerHTML = actionsToString(pactions);
+    actionSeqEl.innerHTML = actionsToString(pactions);
   };
 };
 
@@ -533,7 +533,7 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
 
   var result = [];
 
-  actionEl.innerHTML = 'rounddig';
+  actionSeqEl.innerHTML = 'rounddig';
 
   var clickedmap = {};
 
@@ -553,10 +553,10 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
     }
     else if(digAndBuildMode == DBM_ANTI) type = humanAntiTransformDirAction(player, getWorld(x, y), player.getMainDigColor())[0];
     result.push([type,x,y]);
-    actionEl.innerHTML = 'rounddig ';
+    actionSeqEl.innerHTML = 'rounddig ';
     for(var i = 0; i < result.length; i++) {
-      actionEl.innerHTML += printCo(result[i][1], result[i][2]);
-      if(i < result.length - 1) actionEl.innerHTML += ', ';
+      actionSeqEl.innerHTML += printCo(result[i][1], result[i][2]);
+      if(i < result.length - 1) actionSeqEl.innerHTML += ', ';
     }
     currentNum--;
   };
@@ -569,20 +569,20 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
     if(error != '') {
       setHelp('Round bonus spade error: ' + error);
       result = [];
-      actionEl.innerHTML = 'rounddig';
+      actionSeqEl.innerHTML = 'rounddig';
       currentNum = num;
     } else {
       digAndBuildMode = prevDigAndBuildMode;
       clearHumanState();
       executeButtonFun_ = null;
       executeButtonClearFun_ = null;
-      actionEl.innerHTML = '';
+      actionSeqEl.innerHTML = '';
     }
   };
 
   executeButtonClearFun_ = function() {
     result.pop();
-    actionEl.innerHTML = 'rounddig ' + printCos(result);
+    actionSeqEl.innerHTML = 'rounddig ' + printCos(result);
   };
 };
 

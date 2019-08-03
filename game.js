@@ -245,6 +245,7 @@ function initialGameRender() {
   drawMap();
   drawMapClick();
   drawHud();
+  drawAction();
   drawSaveLoadUI(false);
 }
 
