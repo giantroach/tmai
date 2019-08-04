@@ -321,6 +321,7 @@ Human.prototype.doAction = function(playerIndex, callback) {
     } else {
       executeButtonFun_ = null;
       executeButtonClearFun_ = null;
+      hideAllUIs();
       saveUndoState(undoGameState);
     }
   };
@@ -577,6 +578,7 @@ Human.prototype.doRoundBonusSpade = function(playerIndex, callback) {
       executeButtonFun_ = null;
       executeButtonClearFun_ = null;
       actionSeqEl.innerHTML = '';
+      hideAllUIs();
     }
   };
 
