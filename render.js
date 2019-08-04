@@ -1765,10 +1765,10 @@ function drawSaveLoadUI(onlyload) {
       }, 'Done');
     };
 
-    button = makeFaLinkButton(50, 0, 'folder-open-o', '32px', parent);
+    button = makeFaLinkButton(50, 0, 'folder-open', '32px', parent);
     button.onclick = showLoadGamePopup;
 
-    button = makeFaLinkButton(100, 0, 'file-o', '32px', parent);
+    button = makeFaLinkButton(100, 0, 'file', '32px', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
       var el = makeSizedDiv(50, 50, 400, 150, document.body);
@@ -1802,7 +1802,7 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Undo last action';
 
-    button = makeFaLinkButton(200, 0, 'repeat', '32px', parent);
+    button = makeFaLinkButton(200, 0, 'redo', '32px', parent);
     button.onclick = function() {
       if(undoIndex < -2 || undoIndex + 2 >= undoGameStates.length) return;
       var undoGameState = undoGameStates[undoIndex + 2];
@@ -1814,7 +1814,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'Redo undone action';
 
     // FIXME: This help menu is newly added
-   button = makeLinkButton(250, 0, 'help', parent);
+    button = makeFaLinkButton(250, 0, 'question-circle', '32px', parent);
     button.onclick = function() {
       var el = makeSizedDiv(50, 50, 400, 235, document.body);
       el.style.backgroundColor = 'white';
@@ -1858,7 +1858,7 @@ function drawSaveLoadUI(onlyload) {
     };
 
     // UI
-    button = makeFaLinkButton(300, 0, 'list-alt', '32px', parent);
+    button = makeFaLinkButton(350, 0, 'list-alt', '32px', parent);
     button.onclick = function() {
       // hideAllUIs('human-ui');
       toggleDisplay(document.getElementById('human-ui'), 'block');
@@ -1866,7 +1866,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'Open control panel';
 
     // bonus tile
-    button = makeFaLinkButton(350, 0, 'share-square-o', '32px', parent);
+    button = makeFaLinkButton(400, 0, 'share-square', '32px', parent);
     button.onclick = function() {
       hideAllUIs('bonus');
       toggleDisplay(document.getElementById('bonus'), 'block');
@@ -1874,7 +1874,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See bonus tiles';
 
     // cult track
-    button = makeFaLinkButton(400, 0, 'users', '32px', parent);
+    button = makeFaLinkButton(450, 0, 'users', '32px', parent);
     button.onclick = function() {
       hideAllUIs('cult');
       toggleDisplay(document.getElementById('cult'), 'block');
@@ -1882,7 +1882,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See cult track';
 
     // favor tiles
-    button = makeFaLinkButton(450, 0, 'thumbs-o-up', '32px', parent);
+    button = makeFaLinkButton(500, 0, 'hands', '32px', parent);
     button.onclick = function() {
       hideAllUIs('favor');
       toggleDisplay(document.getElementById('favor'), 'block');
@@ -1890,7 +1890,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See favor tils';
 
     // town
-    button = makeFaLinkButton(500, 0, 'fort-awesome', '32px', parent);
+    button = makeFaLinkButton(550, 0, 'city', '32px', parent);
     button.onclick = function() {
       hideAllUIs('town');
       toggleDisplay(document.getElementById('town'), 'block');
@@ -1898,7 +1898,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See town bonus';
 
     // round
-    button = makeFaLinkButton(550, 0, 'flag-o', '32px', parent);
+    button = makeFaLinkButton(600, 0, 'flag', '32px', parent);
     button.onclick = function() {
       hideAllUIs('round');
       toggleDisplay(document.getElementById('round'), 'block');
@@ -1906,7 +1906,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See round bonus';
 
     // final
-    button = makeFaLinkButton(600, 0, 'flag-checkered', '32px', parent);
+    button = makeFaLinkButton(650, 0, 'flag-checkered', '32px', parent);
     button.onclick = function() {
       hideAllUIs('final');
       toggleDisplay(document.getElementById('final'), 'block');
@@ -1914,7 +1914,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See final bonus';
 
     // players
-    button = makeFaLinkButton(650, 0, 'address-card-o', '32px', parent);
+    button = makeFaLinkButton(700, 0, 'address-card', '32px', parent);
     button.onclick = function() {
       hideAllUIs('players');
       toggleDisplay(document.getElementById('players'), 'block');
@@ -1922,19 +1922,18 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See player details';
 
     // hide all
-    button = makeFaLinkButton(700, 0, 'remove', '32px', parent);
-    button.style.color = 'red';
+    button = makeFaLinkButton(750, 0, 'eye-slash', '32px', parent);
     button.onclick = function() {
       hideAllUIs();
     };
     button.title = 'Hide UI';
 
-    var debugbutton = makeLinkButton(800, 5, 'debug', uiElement);
-    debugbutton.onclick = function() {
-      if(state.type == S_PRE) return;
-      drawDebugActions(0, 563, 850);
-      debugbutton.onclick = undefined;
-    }
+    // var debugbutton = makeLinkButton(800, 5, 'debug', uiElement);
+    // debugbutton.onclick = function() {
+    //   if(state.type == S_PRE) return;
+    //   drawDebugActions(0, 563, 850);
+    //   debugbutton.onclick = undefined;
+    // }
   }
 }
 

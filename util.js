@@ -267,7 +267,7 @@ function makeLinkButton(px, py, text, parent) {
 function makeFaLinkButton(px, py, faClass, size, parent) {
   var el =  makeDiv(px, py, parent);
   fa = makeElement(el, 'i');
-  fa.className = 'fa fa-' + faClass;
+  fa.className = 'fas fa-' + faClass;
   fa.style.fontSize = size;
   el.style.cursor = 'pointer';
   return el;
