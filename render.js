@@ -986,7 +986,7 @@ function drawHud2(players, onTileClickMain) {
   drawHumanUI(563, 570, state.showResourcesPlayer);
   if(state.type == S_GAME_OVER) {
     autoSave(game, state, logText);
-    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
+    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY + 532, 0 /*playerIndex*/);
   }
 }
 
@@ -1561,13 +1561,13 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  // passY = 256;
-  // makeText(px, py + passY, 'PASS: ', parent);
-  // var passbutton = makeLinkButton(px + 135, py + passY, getActionName(A_PASS), parent);
-  // passbutton.onclick = function() {
-  //   prepareAction(new Action(A_PASS));
-  // };
-  // passbutton.title = 'Pass for this round. Click on a chosen bonus tile after this, then press execute';
+  passY = prevY;
+  makeText(px + 400, py + passY, 'PASS: ', parent);
+  var passbutton = makeLinkButton(px + 535, py + passY, getActionName(A_PASS), parent);
+  passbutton.onclick = function() {
+    prepareAction(new Action(A_PASS));
+  };
+  passbutton.title = 'Pass for this round. Click on a chosen bonus tile after this, then press execute';
 
 
   // var execbutton = makeExecButton(player, px + 680, py + 120, parent, executeButtonFun, 'Execute chosen action sequence.\n\nOnly works while doing actions, not during other game decisions (such as leeching power or digging from round bonus).\n\nPress this button after choosing all actions from the left in the correct order. You may do multiple actions, but only one true turn action. For example, you can burn power or convert resources, then dig, then build, convert some more resources, then press execute. Or chaos magicians may do their double action move followed by two turn actions.\n\nIf it fails (e.g. not enough resources), the error message is shown and you can retry with a new action sequence.\n\nSome actions require clicking on the map, a cult track, favor or town tiles before pressing this button. Please see the appropriate messages that appear on screen when you need to do so.');
@@ -1735,9 +1735,25 @@ function drawAction() {
   document.getElementById('action').style.display = 'block';
 }
 
-function hideAction() {
-  document.getElementById('action').style.display = 'none';
-}
+// toggle UIs
+function hideAllUIs(except) {
+  var i;
+  var ids = [
+    'human-ui',
+    'bonus',
+    'cult',
+    'favor',
+    'town',
+    'round',
+    'final',
+    'players',
+  ];
+  for (i = 0; i < ids.length; i += 1) {
+    if (except !== ids[i]) {
+      toggleDisplay(document.getElementById(ids[i]), 'none');
+    }
+  }
+};
 
 function drawSaveLoadUI(onlyload) {
   var parent = uiElement;
@@ -1836,32 +1852,19 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Show user interface help';
 
-
-    // toggle UIs
-    var hideAllUIs = function (except) {
-      var i;
-      var ids = [
-        'human-ui',
-        'bonus',
-        'cult',
-        'favor',
-        'town',
-        'round',
-        'final',
-        'players',
-      ];
-      for (i = 0; i < ids.length; i += 1) {
-        if (except !== ids[i]) {
-          toggleDisplay(document.getElementById(ids[i]), 'none');
-        }
-      }
-    };
-
     // UI
     button = makeFaLinkButton(350, 0, 'list-alt', '32px', parent);
     button.onclick = function() {
       // hideAllUIs('human-ui');
       toggleDisplay(document.getElementById('human-ui'), 'block');
+      const scoreEl = document.getElementById('score');
+      if (score) {
+        document.getElementById('human-ui').style.display = 'none';
+        console.log('score.style.display', score.style.display);
+        score.style.display === '' ?
+          score.style.display = 'none' :
+          toggleDisplay(score, 'block');
+      }
     };
     button.title = 'Open control panel';
 

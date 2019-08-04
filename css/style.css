@@ -28,6 +28,10 @@ body * {
     position: relative;
 }
 
+#players {
+    z-index: 2;
+}
+
 #human-ui {
     top: 532px;
 }
@@ -89,4 +93,9 @@ body * {
 
 #ui svg {
     color: #333;
+}
+
+#score {
+    z-index: 1;
+    position: relative;
 }
