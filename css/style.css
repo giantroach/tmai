@@ -86,3 +86,7 @@ body * {
     overflow-Y: scroll;
     margin-bottom: 5px;
 }
+
+#ui svg {
+    color: #333;
+}
