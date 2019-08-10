@@ -840,12 +840,17 @@ function getPlayerResourcesString(player, markup) {
 }
 
 function drawPlayerPanel(px, py, player, scoreProjection) {
+  const padding = 5;
+
   var rootContainer = hudSubElement('players');
   container = makeElement(rootContainer, 'div');
   container.id = 'player-' + getFullName(player);
-  var bg = makeSizedDiv(px - 5, py - 5, 800, 185, container)
+  var bg = makeSizedDiv(px, py, 820, 135, container);
   bg.style.border = player.index == state.currentPlayer ? '2px solid black' : '1px solid black';
-  bg.style.backgroundColor = '#fff0e0';
+  bg.style.backgroundColor = 'rgba(255, 240, 224, 0.8)';
+
+  px += padding;
+  py += padding;
 
   function drawDigCircle(px, py) {
     if(player.color == Z) {
@@ -872,8 +877,14 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
       drawOrb(px + -9, py + 39, b + (color + 4 - b) % num, container);
     }
   }
+
+
+  let prevPy = py;
+  const lineHeight = 15;
+
+  // player name
   var name = getFullName(player);
-  var playertext = makeText(px, py, name, container);
+  var playertext = makeText(px, prevPy, name, container);
   var imColor = getImageColor(player.woodcolor);
   if(player.passed) {
     playertext.style.backgroundColor = getTranslucentColor(imColor, 64);
@@ -883,53 +894,91 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
     playertext.style.color = getHighContrastColor(imColor);
   }
 
+  // passed / start label
+  var passedtext = '';
+  if(player.passed && player.index == state.startPlayer) passedtext += 'passed, start';
+  else if(player.passed) passedtext += 'passed';
+  else if(player.index == state.startPlayer) passedtext += 'start';
+  makeText(name.length > 18 ? px + 170 : px + 130, prevPy , passedtext, container);
 
-  var vptext = makeText(px, py + 15, 'VP: ' + player.vp, container);
+  // current VP
+  var vptext = makeText(px + 300, prevPy, 'VP: ' + player.vp, container);
   vptext.title = getFullVPDetailsText(player);
   vptext.onclick = bind(showGreyDialogAtMouse, getFullVPDetailsText(player));
   vptext.style.cursor = 'pointer';
   vptext.style.fontWeight = 'bold';
-  var passedtext = ''
-  if(player.passed && player.index == state.startPlayer) passedtext += 'passed, start';
-  else if(player.passed) passedtext += 'passed';
-  else if(player.index == state.startPlayer) passedtext += 'start';
-  makeText(name.length > 18 ? px + 170 : px + 130, py , passedtext, container);
-  makeText(px, py + 30, 'res: <b>' + getPlayerResourcesString(player, true) + '</b>', container);
 
-  makeText(px, py + 45, 'D: <b>' + dangerColor(player.b_d == 0, built_d(player) + '/8</b>') + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_D, false)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_D)), container);
-  makeText(px, py + 60, 'TP: <b>' + dangerColor(player.b_tp == 0, built_tp(player) + '/4</b>') + ' cost: ' +
-      costAlternativesToString(player.getFaction().getBuildingCost(B_TP, true), player.getFaction().getBuildingCost(B_TP, false)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TP)), container);
-  makeText(px, py + 75, 'TE: <b>' + dangerColor(player.b_te == 0, built_te(player) + '/3</b>') + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_TE, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_TE)), container);
-  makeText(px, py + 90, 'SH: <b>' + built_sh(player) + '/1</b> cost: ' + costToString(player.getFaction().getBuildingCost(B_SH, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SH)), container);
-  makeText(px, py + 105, 'SA: <b>' + built_sa(player) + '/1</b> cost: ' + costToString(player.getFaction().getBuildingCost(B_SA, true)) +
-      ' next: ' + costToString(getIncomeForNextBuilding(player, B_SA)), container);
+  // resource
+  prevPy += lineHeight + padding;
+  makeText(px, prevPy, 'res: <b>' + getPlayerResourcesString(player, true) + '</b>', container);
 
-
-  if(player.maxdigging > 0) makeText(px, py + 120, 'digging: <b>' + player.digging + '</b> (' + player.digging + '/' + player.maxdigging + ') advcost: ' + costToString(player.getActionCost(A_ADV_DIG)), container);
-  else if(player.maxdigging == 0) makeText(px, py + 120, 'digging: 0/0', container);
-  else makeText(px, py + 120, 'digging: N/A', container);
-  if(player.maxshipping > 0) makeText(px, py + 135, 'shipping: <b>' + getShipping(player, false) + '</b> (' + player.shipping + '/' + player.maxshipping + (player.bonusshipping ? ' + ' + player.bonusshipping : '') + ') advcost: ' + costToString(player.getActionCost(A_ADV_SHIP)), container);
-  else if(player.maxtunnelcarpetdistance > 0) makeText(px, py + 135, 'range: <b>' + player.tunnelcarpetdistance + '/' + player.maxtunnelcarpetdistance, container);
-  else if(player.maxshipping == 0) makeText(px, py + 135, 'shipping: 0/0', container);
-  else makeText(px, py + 135, 'shipping: N/A', container);
-
+  // income
   if(state.round == 6 && state.type != S_GAME_OVER) {
     var p = scoreProjection[player.index];
-    makeText(px, py + 150, 'projected end vp: <b>' + p[0] + '</b> (current: ' + player.vp + ', cult: ' + p[1] + ', netw: ' + p[2] + ', fin: ' + p[3] + ', res: ' + p[4] + ', pass: ' + p[5] + ')', container);
+    makeText(px + 300, prevPy, 'projected end vp: <b>' + p[0] + '</b> (current: ' + player.vp + ', cult: ' + p[1] + ', netw: ' + p[2] + ', fin: ' + p[3] + ', res: ' + p[4] + ', pass: ' + p[5] + ')', container);
   } else {
     var income = getIncome(player, player.passed /*display bonus tile income only when passed*/, state.round);
     var dangerp = income[2] > player.pp - player.p;
     var dangerpw = income[3] > player.pw0 * 2 + player.pw1;
 
-    makeText(px, py + 150, 'income: <B>' + income[0] + 'c, ' + income[1] + 'w, ' +
-        dangerColor(dangerp, income[2] + 'p') + ', ' + dangerColor(dangerpw, income[3] + 'pw</b>'), container);
+    makeText(px + 300, prevPy, 'income: <B>' + income[0] + 'c, ' + income[1] + 'w, ' +
+             dangerColor(dangerp, income[2] + 'p') + ', ' + dangerColor(dangerpw, income[3] + 'pw</b>'), container);
   }
 
-  makeText(px, py + 165, 'octogons: ', container).title = 'the actions with an action token this player has exclusive access to (striked through when already used this round)';
+  // buildings
+  // buildings - SH - SA
+  prevPy += lineHeight + padding;
+  makeText(px, prevPy, 'SH: <b>' + built_sh(player) + '/1</b>'
+           + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_SH, true))
+           + ' next: ' + costToString(getIncomeForNextBuilding(player, B_SH)), container);
+
+  makeText(px + 300, prevPy, 'SA: <b>' + built_sa(player) + '/1</b>'
+           + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_SA, true))
+           + ' next: ' + costToString(getIncomeForNextBuilding(player, B_SA)), container);
+
+  // buildings - TP - TE
+  prevPy += lineHeight;
+  makeText(px, prevPy, 'TP: <b>' + dangerColor(player.b_tp == 0, built_tp(player) + '/4</b>')
+           + ' cost: ' + costAlternativesToString(player.getFaction().getBuildingCost(B_TP, true), player.getFaction().getBuildingCost(B_TP, false))
+           + ' next: ' + costToString(getIncomeForNextBuilding(player, B_TP)), container);
+
+  makeText(px + 300, prevPy, 'TE: <b>' + dangerColor(player.b_te == 0, built_te(player) + '/3</b>')
+           + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_TE, true))
+           + ' next: ' + costToString(getIncomeForNextBuilding(player, B_TE)), container);
+
+  // buildings - D
+  makeText(px, prevPy += lineHeight, 'D: <b>' + dangerColor(player.b_d == 0, built_d(player) + '/8</b>')
+           + ' cost: ' + costToString(player.getFaction().getBuildingCost(B_D, false))
+           + ' next: ' + costToString(getIncomeForNextBuilding(player, B_D)), container);
+
+  // advance
+  prevPy += lineHeight + padding;
+  if (player.maxdigging > 0) {
+    makeText(px, prevPy, 'digging: <b>' + player.digging + '</b> (' + player.digging + '/' + player.maxdigging + ') advcost: ' + costToString(player.getActionCost(A_ADV_DIG)), container);
+  }
+  else if (player.maxdigging == 0) {
+    makeText(px, prevPy, 'digging: 0/0', container);
+  }
+  else {
+    makeText(px, prevPy, 'digging: N/A', container);
+  }
+
+  if (player.maxshipping > 0) {
+    makeText(px + 300, prevPy, 'shipping: <b>' + getShipping(player, false) + '</b> (' + player.shipping + '/' + player.maxshipping + (player.bonusshipping ? ' + ' + player.bonusshipping : '') + ') advcost: ' + costToString(player.getActionCost(A_ADV_SHIP)), container);
+  }
+  else if (player.maxtunnelcarpetdistance > 0) {
+    makeText(px + 300, prevPy, 'range: <b>' + player.tunnelcarpetdistance + '/' + player.maxtunnelcarpetdistance, container);
+  }
+  else if (player.maxshipping == 0) {
+    makeText(px + 300, prevPy, 'shipping: 0/0', container);
+  }
+  else {
+    makeText(px + 300, prevPy, 'shipping: N/A', container);
+  }
+
+  // octogons
+  prevPy += lineHeight + padding;
+  makeText(px, prevPy, 'octogons: ', container).title = 'the actions with an action token this player has exclusive access to (striked through when already used this round)';
   var actionsText = '';
   function addActionText(octogon) {
     var name = getActionName(octogon);
@@ -947,9 +996,9 @@ function drawPlayerPanel(px, py, player, scoreProjection) {
     if(player.faction == F_AUREN) addActionText(A_AUREN_CULT);
     if(player.faction == F_WITCHES) addActionText(A_WITCHES_D);
   }
-  makeText(px + 70, py + 165, actionsText, container);
+  makeText(px + 70, prevPy, actionsText, container);
 
-  if(player.color != I && player.color != N) drawDigCircle(px + 280, py + 20);
+  if(player.color != I && player.color != N) drawDigCircle(px + 770, py + 20);
 
   var bonustiles = {};
   if(player.bonustile) bonustiles[player.bonustile] = 1;
@@ -974,7 +1023,7 @@ function drawHud2(players, onTileClickMain) {
   hudElement.innerHTML = '';
   var scoreProjection;
   if(state.round == 6) scoreProjection = projectEndGameScores();
-  for(var i = 0; i < players.length; i++) drawPlayerPanel(10, 0 + 205 * i, players[i], scoreProjection);
+  for(var i = 0; i < players.length; i++) drawPlayerPanel(0, 0 + 145 * i, players[i], scoreProjection);
 
   drawTilesArray(5, 0, game.roundtiles, 500, 5, onTileClickMain);
   drawTilesMap(hudSubElement('bonus'), game.bonustiles, 500, 5, onTileClickMain);
@@ -1767,9 +1816,8 @@ function drawSaveLoadUI(onlyload) {
     // logEl.style.display = 'block';
     actionEl.style.display = 'block';
     let prevX = 0;
-    const iconSize = 36;
 
-    button = makeFaLinkButton(prevX, 0, 'save', iconSize, parent);
+    button = makeFaLinkButton(prevX, 0, 'save', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
       var els = makePopupUpTextArea();
@@ -1788,10 +1836,10 @@ function drawSaveLoadUI(onlyload) {
     };
 
 
-    button = makeFaLinkButton(prevX += 50, 0, 'folder-open', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'folder-open', parent);
     button.onclick = showLoadGamePopup;
 
-    button = makeFaLinkButton(prevX += 50, 0, 'file', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'file', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
       var el = makeSizedDiv(50, 50, 400, 150, document.body);
@@ -1813,7 +1861,7 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Start a new game';
 
-    button = makeFaLinkButton(prevX += 50, 0, 'undo', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'undo', parent);
     button.onclick = function() {
       if(undoIndex < 0 || undoIndex >= undoGameStates.length) return;
       if(undoIndex + 1 == undoGameStates.length) undoGameStates.push(saveGameState(game, state, logText));
@@ -1825,7 +1873,7 @@ function drawSaveLoadUI(onlyload) {
     };
     button.title = 'Undo last action';
 
-    button = makeFaLinkButton(prevX += 50, 0, 'redo', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'redo', parent);
     button.onclick = function() {
       if(undoIndex < -2 || undoIndex + 2 >= undoGameStates.length) return;
       var undoGameState = undoGameStates[undoIndex + 2];
@@ -1837,7 +1885,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'Redo undone action';
 
     // FIXME: This help menu is newly added
-    button = makeFaLinkButton(prevX += 50, 0, 'question-circle', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'question-circle', parent);
     button.onclick = function() {
       var el = makeSizedDiv(50, 50, 400, 235, document.body);
       el.style.backgroundColor = 'white';
@@ -1862,7 +1910,7 @@ function drawSaveLoadUI(onlyload) {
     prevX += 20;
 
     // UI
-    button = makeFaLinkButton(prevX += 50, 0, 'list-alt', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'list-alt', parent);
     button.onclick = function() {
       // hideAllUIs('human-ui');
       toggleDisplay(document.getElementById('human-ui'), 'block');
@@ -1878,7 +1926,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'Open control panel';
 
     // bonus tile
-    button = makeFaLinkButton(prevX += 50, 0, 'share-square', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'share-square', parent);
     button.onclick = function() {
       hideAllUIs('bonus');
       toggleDisplay(document.getElementById('bonus'), 'block');
@@ -1886,7 +1934,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See bonus tiles';
 
     // cult track
-    button = makeFaLinkButton(prevX += 50, 0, 'users', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'users', parent);
     button.onclick = function() {
       hideAllUIs('cult');
       toggleDisplay(document.getElementById('cult'), 'block');
@@ -1894,7 +1942,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See cult track';
 
     // favor tiles
-    button = makeFaLinkButton(prevX += 50, 0, 'hands', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'hands', parent);
     button.onclick = function() {
       hideAllUIs('favor');
       toggleDisplay(document.getElementById('favor'), 'block');
@@ -1902,7 +1950,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See favor tils';
 
     // town
-    button = makeFaLinkButton(prevX += 50, 0, 'city', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'city', parent);
     button.onclick = function() {
       hideAllUIs('town');
       toggleDisplay(document.getElementById('town'), 'block');
@@ -1910,7 +1958,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See town bonus';
 
     // round
-    button = makeFaLinkButton(prevX += 50, 0, 'flag', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'flag', parent);
     button.onclick = function() {
       hideAllUIs('round');
       toggleDisplay(document.getElementById('round'), 'block');
@@ -1918,7 +1966,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See round bonus';
 
     // final
-    button = makeFaLinkButton(prevX += 50, 0, 'flag-checkered', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'flag-checkered', parent);
     button.onclick = function() {
       hideAllUIs('final');
       toggleDisplay(document.getElementById('final'), 'block');
@@ -1926,7 +1974,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See final bonus';
 
     // players
-    button = makeFaLinkButton(prevX += 50, 0, 'address-card', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'address-card', parent);
     button.onclick = function() {
       hideAllUIs('players');
       toggleDisplay(document.getElementById('players'), 'block');
@@ -1934,7 +1982,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See player details';
 
     // logs
-    button = makeFaLinkButton(prevX += 50, 0, 'list', iconSize, document.body);
+    button = makeFaLinkButton(prevX += 50, 0, 'list', document.body);
     button.onclick = function() {
       hideAllUIs('log');
       toggleDisplay(document.getElementById('log'), 'block');
@@ -1942,7 +1990,7 @@ function drawSaveLoadUI(onlyload) {
     button.title = 'See player details';
 
     // hide all
-    button = makeFaLinkButton(prevX += 50, 0, 'eye-slash', iconSize, parent);
+    button = makeFaLinkButton(prevX += 50, 0, 'eye-slash', parent);
     button.onclick = function() {
       hideAllUIs();
     };
