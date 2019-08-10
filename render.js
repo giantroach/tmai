@@ -986,7 +986,7 @@ function drawHud2(players, onTileClickMain) {
   drawHumanUI(563, 570, state.showResourcesPlayer);
   if(state.type == S_GAME_OVER) {
     autoSave(game, state, logText);
-    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY + 532, 0 /*playerIndex*/);
+    drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
   }
 }
 
@@ -1229,21 +1229,26 @@ function drawHumanUI(x, y, playerIndex) {
       drawOrb(cx + 25, cy, S, parent);
       // e.g. firetransform
       document.getElementById('cult').style.display = 'block';
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_BONUS_TILE) {
       // FIXME
       makeText(px, py + 2, 'click on a bonus tile on the left to continue. An example is shown below.', parent);
       renderBonusTile(cx - 30, cy - 32, T_NONE, '', '?', '', undefined, parent);
       toggleDisplay(document.getElementById('bonus'), 'block');
-      var buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
         toggleDisplay(document.getElementById('human-ui'), 'none');
       }, 'OK');
     }
     else if(humanstate == HS_FAVOR_TILE) {
-      // makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
-      // renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined);
-      makeText(px, py + 2, 'click on a favor tile on the left to continue.', parent);
+      makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
+      renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined, parent);
       toggleDisplay(document.getElementById('favor'), 'block');
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_TOWN_TILE) {
       makeText(px, py + 2, 'click on a town tile on the left to continue. An example is shown below.', parent);
@@ -1448,7 +1453,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     button = addCultButton(px2, py + tileY, getActionName(A_BONUS_CULT), 1, A_BONUS_CULT);
     button.style.color = 'red';
     button.title = 'cult action from the bonus cult tile';
-    px2 += 60;
+    px2 += 120;
   }
   if(player.favortiles[T_FAV_2W_CULT] && !player.octogons[A_FAVOR_CULT]) {
     button = addCultButton(px2, py + tileY, getActionName(A_FAVOR_CULT), 1, A_FAVOR_CULT);
