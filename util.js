@@ -266,9 +266,13 @@ function makeLinkButton(px, py, text, parent) {
 
 function makeFaLinkButton(px, py, faClass, size, parent) {
   var el =  makeDiv(px, py, parent);
+  el.style.height = size + 10 + 'px';
+  el.style.width = size + 10 + 'px';
+  el.style.textAlign = 'center';
   fa = makeElement(el, 'i');
   fa.className = 'fas fa-' + faClass;
-  fa.style.fontSize = size;
+  fa.style.fontSize = size + 'px';
+  fa.style.margin = '5px';
   el.style.cursor = 'pointer';
   return el;
 }
