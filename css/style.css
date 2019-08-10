@@ -3,6 +3,7 @@ body {
 }
 body * {
     box-sizing: border-box;
+    white-space: nowrap;
 }
 
 #bonus,
