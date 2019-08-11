@@ -1180,7 +1180,7 @@ function drawHumanUI(x, y, playerIndex) {
   ACTIONPANELX = px;
   ACTIONPANELY = py;
   ACTIONPANELW = 820;
-  ACTIONPANELH = 180;
+  ACTIONPANELH = 280;
   var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.border = '1px solid black';
   bg.style.backgroundColor = 'white';
@@ -1325,7 +1325,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
 
   var button;
   let prevY = 0;
-  const lineHeight = 24;
+  const lineHeight = 30;
 
   makeText(px, py, 'POWER:', parent);
   if(player.getFaction().canTakeAction(player, A_POWER_BRIDGE, game)) {
@@ -1380,7 +1380,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     };
   }
 
-  convY = prevY += lineHeight;
+  const convY = prevY += lineHeight;
   makeText(px, py + convY, 'CONVERT: ', parent);
   addSimpleActionButton(px+135, py+convY, 'burn', A_BURN).title = 'sacrifice power from second bowl to get one in your main bowl';
   addSimpleActionButton(px+195, py+convY, '1pw->c', A_CONVERT_1PW_1C);
@@ -1389,40 +1389,40 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   addSimpleActionButton(px+465, py+convY, 'p->w', A_CONVERT_1P_1W);
   addSimpleActionButton(px+530, py+convY, 'w->c', A_CONVERT_1W_1C);
 
-  // prieY = 64;
-  // makeText(px, py + prieY, 'PRIEST: ', parent);
+  const prieY = prevY += lineHeight;
+  makeText(px, py + prieY, 'PRIEST: ', parent);
 
-  // var sendPriestFun = function(type) {
-  //   var fun = function(cult) {
-  //     clearHumanState();
-  //     var action = new Action(type);
-  //     action.cult = cult;
-  //     prepareAction(action);
-  //   };
-  //   queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
-  // };
-  // var sendPriestAutoFun = function(type) {
-  //   var fun = function(cult) {
-  //     clearHumanState();
-  //     var type = getAutoSendPriestCultAction(player, cult);
-  //     var action = new Action(type);
-  //     action.cult = cult;
-  //     prepareAction(action);
-  //   };
-  //   queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
-  // };
+  var sendPriestFun = function(type) {
+    var fun = function(cult) {
+      clearHumanState();
+      var action = new Action(type);
+      action.cult = cult;
+      prepareAction(action);
+    };
+    queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
+  };
+  var sendPriestAutoFun = function(type) {
+    var fun = function(cult) {
+      clearHumanState();
+      var type = getAutoSendPriestCultAction(player, cult);
+      var action = new Action(type);
+      action.cult = cult;
+      prepareAction(action);
+    };
+    queueHumanState(HS_CULT, 'choose which cult track to send the priest to', fun);
+  };
 
-  // var priestbutton = makeLinkButton(px + 135, py + prieY, 'cult', parent);
-  // priestbutton.onclick = sendPriestAutoFun;
-  // priestbutton.title = 'send priest to highest free value on a cult track';
-  // var priest1button = makeLinkButton(px + 210, py + prieY, getActionName(A_CULT_PRIEST1), parent);
-  // priest1button.onclick = bind(sendPriestFun, A_CULT_PRIEST1);
-  // var priest2button = makeLinkButton(px + 285, py + prieY, getActionName(A_CULT_PRIEST2), parent);
-  // priest2button.onclick = bind(sendPriestFun, A_CULT_PRIEST2);
-  // var priest3button = makeLinkButton(px + 360, py + prieY, getActionName(A_CULT_PRIEST3), parent);
-  // priest3button.onclick = bind(sendPriestFun, A_CULT_PRIEST3);
+  var priestbutton = makeLinkButton(px + 135, py + prieY, 'cult', parent);
+  priestbutton.onclick = sendPriestAutoFun;
+  priestbutton.title = 'send priest to highest free value on a cult track';
+  var priest1button = makeLinkButton(px + 210, py + prieY, getActionName(A_CULT_PRIEST1), parent);
+  priest1button.onclick = bind(sendPriestFun, A_CULT_PRIEST1);
+  var priest2button = makeLinkButton(px + 285, py + prieY, getActionName(A_CULT_PRIEST2), parent);
+  priest2button.onclick = bind(sendPriestFun, A_CULT_PRIEST2);
+  var priest3button = makeLinkButton(px + 360, py + prieY, getActionName(A_CULT_PRIEST3), parent);
+  priest3button.onclick = bind(sendPriestFun, A_CULT_PRIEST3);
 
-  tranY = prevY += lineHeight;
+  const tranY = prevY += lineHeight;
   makeText(px, py + tranY, 'TRANSFORM: ', parent);
 
   function addDigButton(px, py, text, num, type) {
@@ -1458,7 +1458,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     queueHumanState(HS_MAP, 'click where to build dwelling', fun);
   };
 
-  upgrY = prevY += lineHeight;
+  const upgrY = prevY += lineHeight;
   makeText(px, py + upgrY, 'UPGRADE: ', parent);
   var upgr1button = makeLinkButton(px + 135, py + upgrY, 'upgr1', parent);
   upgr1button.title = 'upgrade to trading post (TP) or to stronghold (SH)';
@@ -1467,14 +1467,14 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
   upgr2button.title = 'upgrade to temple (TE) or to sanctuary (SA)';
   upgr2button.onclick = upgrade2fun;
 
-  advaY = prevY += lineHeight;
+  const advaY = prevY += lineHeight;
   makeText(px, py + advaY, 'ADVANCE: ', parent);
   if(player.digging < player.maxdigging) addSimpleActionButton(px + 135, py + advaY, getActionName(A_ADV_DIG), A_ADV_DIG);
   if(player.shipping < player.maxshipping) addSimpleActionButton(px + ((player.digging < player.maxdigging) ? 255 : 135), py + advaY, getActionName(A_ADV_SHIP), A_ADV_SHIP);
 
   var px2;
 
-  tileY = prevY += lineHeight;
+  const tileY = prevY += lineHeight;
   makeText(px, py + tileY, 'TILES: ', parent);
   function addCultButton(px, py, text, num, type) {
     var button = makeLinkButton(px, py, text, parent);
@@ -1511,7 +1511,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  factY = prevY += lineHeight;
+  const factY = prevY += lineHeight;
   makeText(px, py + factY, 'FACTION: ', parent);
   px2 = px + 90;
   if(player.faction == F_CHAOS && player.b_sh == 0 && !player.octogons[A_DOUBLE]) {
@@ -1615,9 +1615,9 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     px2 += 60;
   }
 
-  passY = prevY;
-  makeText(px + 400, py + passY, 'PASS: ', parent);
-  var passbutton = makeLinkButton(px + 535, py + passY, getActionName(A_PASS), parent);
+  const passY = prevY += lineHeight;
+  makeText(px, py + passY, 'PASS: ', parent);
+  var passbutton = makeLinkButton(px + 135, py + passY, getActionName(A_PASS), parent);
   passbutton.onclick = function() {
     prepareAction(new Action(A_PASS));
   };

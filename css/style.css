@@ -82,12 +82,13 @@ body * {
 
 #log {
     width: 820px;
-    height: 180px;
+    height: 320px;
     overflow-y: auto;
     border: 1px solid darkgray;
     z-index: 0;
     background-color: rgba(255, 255, 255, 0.8);
     display: none;
+    padding: 5px;
 }
 
 #doc {
