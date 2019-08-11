@@ -1,5 +1,17 @@
+body {
+    margin: 0;
+}
 body * {
     box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.outline {
+    text-shadow:
+        1px 1px 0 #FFF,
+        1px -1px 0 #FFF,
+        -1px 1px 0 #FFF,
+        -1px -1px 0 #FFF;
 }
 
 #bonus,
@@ -13,14 +25,14 @@ body * {
 #players,
 #summary {
     position: relative;
-    top: 30px;
+    top: 50px;
     display: none;
-    z-index: 1;
+    z-index: 3;
 }
 
 #popup {
     position: relative;
-    top: 30px;
+    top: 50px;
     z-index: 1;
 }
 
@@ -29,11 +41,11 @@ body * {
 }
 
 #players {
-    z-index: 2;
+    z-index: 3;
 }
 
 #human-ui {
-    top: 532px;
+    top: 78px;
 }
 
 #human-ui > div {
@@ -76,12 +88,19 @@ body * {
     text-align: center;
 }
 
+#help {
+    z-index: 2;
+}
+
 #log {
     width: 820px;
-    height: 180px;
+    height: 320px;
     overflow-y: auto;
     border: 1px solid darkgray;
     z-index: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: none;
+    padding: 5px;
 }
 
 #doc {

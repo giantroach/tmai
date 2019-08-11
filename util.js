@@ -264,11 +264,15 @@ function makeLinkButton(px, py, text, parent) {
   return el;
 }
 
-function makeFaLinkButton(px, py, faClass, size, parent) {
+function makeFaLinkButton(px, py, faClass, parent) {
   var el =  makeDiv(px, py, parent);
+  el.style.height = 50 + 'px';
+  el.style.width = 50 + 'px';
+  el.style.textAlign = 'center';
   fa = makeElement(el, 'i');
   fa.className = 'fas fa-' + faClass;
-  fa.style.fontSize = size;
+  fa.style.fontSize = 32 + 'px';
+  fa.style.margin = '5px';
   el.style.cursor = 'pointer';
   return el;
 }
