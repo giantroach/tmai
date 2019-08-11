@@ -25,7 +25,7 @@ freely, subject to the following restrictions:
 
 //Everything related to drawing and UI
 
-var mapElement = makeSizedDiv(0, 50, 820, 442, document.body);
+var mapElement = makeSizedDiv(0, 50 + 28, 820, 442, document.body);
 mapElement.id = 'map';
 document.body.appendChild(mapElement);
 
@@ -39,14 +39,15 @@ var hudElement =  document.createElement('div');
 hudElement.id = 'hud';
 document.body.appendChild(hudElement);
 
-
-var helpEl = makeDiv(563, 500, document.body);
+// Display who's turn etc.
+var helpEl = makeDiv(0, 52, document.body);
 helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
 helpEl.style.whiteSpace = 'nowrap';
+helpEl.style.right = 120;
+helpEl.style.left = 'initial';
 
-
-var actionEl = makeDiv(0, 500, document.body);
+var actionEl = makeDiv(0, 50, document.body);
 actionEl.id = 'action';
 actionEl.style.display = 'none';
 
@@ -1496,7 +1497,7 @@ function drawPlayerActions(px, py, playerIndex, parent /*parent DOM element*/) {
     button = addDigButton(px2, py + tileY, getActionName(A_BONUS_SPADE), 1, A_BONUS_SPADE);
     button.style.color = 'red';
     button.title = 'dig action from the bonus dig tile. Note: by default also builds where you click, use the selector to change to other transform actions.';
-    px2 += 75;
+    px2 += 120;
   }
   if(player.bonustile == T_BON_CULT_4C && !player.octogons[A_BONUS_CULT]) {
     button = addCultButton(px2, py + tileY, getActionName(A_BONUS_CULT), 1, A_BONUS_CULT);
