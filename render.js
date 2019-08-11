@@ -40,12 +40,11 @@ hudElement.id = 'hud';
 document.body.appendChild(hudElement);
 
 // Display who's turn etc.
-var helpEl = makeDiv(0, 52, document.body);
+var helpEl = makeDiv(5, 40, document.body);
 helpEl.id = 'help';
 helpEl.style.fontWeight = 'bold';
 helpEl.style.whiteSpace = 'nowrap';
-helpEl.style.right = 120;
-helpEl.style.left = 'initial';
+helpEl.className = 'outline';
 
 var actionEl = makeDiv(0, 50, document.body);
 actionEl.id = 'action';
@@ -486,8 +485,8 @@ function drawCultTracks(px, py) {
   drawVLine(px, py + 8 * trackheight / 12, trackwidth * 4, '#000');
 }
 
-function renderTownTile(px, py, tile, vp, text, onTileClick) {
-  var container = hudSubElement('town');
+function renderTownTile(px, py, tile, vp, text, onTileClick, parent) {
+  var container = parent || hudSubElement('town');
   var el = makeDiv(px, py, container);
   el.style.border = '1px solid #ff8822';
   el.style.width = 45;
@@ -570,8 +569,8 @@ function drawBonusTile(px, py, tile, onTileClick) {
   return renderBonusTile(px, py, tile, text1, text2, text3, onTileClick);
 }
 
-function renderFavorTile(px, py, tile, cult, num, text1, text2, onTileClick) {
-  var container = hudSubElement('favor');
+function renderFavorTile(px, py, tile, cult, num, text1, text2, onTileClick, parent) {
+  var container = parent || hudSubElement('favor');
   var el = makeDiv(px, py, container);
   el.style.border = '1px solid #aaa';
   el.style.width = 70;
@@ -623,7 +622,7 @@ function drawFavorTile(px, py, tile, onTileClick) {
 }
 
 function renderRoundTile(px, py, tile, cult, num, text1, text2, index) {
-  var container = hudSubElement('round')
+  var container = hudSubElement('round');
   var el = makeDiv(px, py, container);
   el.style.border = '1px solid black';
   el.style.width = 70;
@@ -650,6 +649,7 @@ function renderRoundTile(px, py, tile, cult, num, text1, text2, index) {
 
   var text4el = makeDiv(px + 1, py - 12, container);
   text4el.innerHTML = 'round ' + index;
+  text4el.className = 'outline';
 
   return [71, 61];
 }
@@ -670,7 +670,7 @@ function drawRoundTile(px, py, tile, index) {
   else if(tile == T_ROUND_TP3VP_4A1DIG) { text1 = 'TP: 3vp'; text2 = 'dig'; num = 4; cult = C_A; }
   else if(tile == T_ROUND_TE4VP_P2C) { text1 = 'TE: 4vp'; text2 = '2c'; num = 1; cult = 'P'; }
   else return [0, 0];
-  return renderRoundTile(px, py, tile, cult, num, text1, text2, index);
+  return renderRoundTile(px, py + 12, tile, cult, num, text1, text2, index);
 }
 
 //returns draw width
@@ -688,12 +688,15 @@ function drawTilesMap(parent, tiles, maxWidth, startX, onTileClick) {
   var px = 0;
   var py = 0;
   var px2 = 0;
-  var py2 = 0;
+  var py2 = 30;
   var i = 0;
   for (var tile in tiles) {
     if (tiles.hasOwnProperty(tile) && tiles[tile] > 0) {
       // FIXME: I'd like to avoid passing parent here
-      if (tiles[tile] > 1) makeText(px + px2, py + py2 - 12, tiles[tile] + 'x', parent);
+      if (tiles[tile] > 1) {
+        const txtEl = makeText(px + px2, py + py2 - 12, tiles[tile] + 'x', parent);
+        txtEl.className = 'outline';
+      }
       var size = drawTile(px + px2, py + py2, tile, onTileClick, i);
       if(px2 + size[0] + 5 > maxWidth) {
         px2 = (startX - px);
@@ -709,7 +712,7 @@ function drawTilesMap(parent, tiles, maxWidth, startX, onTileClick) {
 
 function drawTilesArray(px, py, tiles, maxWidth, startX, onTileClick) {
   var px2 = 0;
-  var py2 = 0;
+  var py2 = 20;
   for (var i = 0; i < tiles.length; i++) {
     var size = drawTile(px + px2, py + py2, tiles[i], onTileClick, i);
     if(px2 + size[0] + 5 > maxWidth) {
@@ -745,6 +748,7 @@ function renderFinalScoringTile(px, py, text1, text2, text3, text4, text5, text6
 
   var text0el = makeDiv(px - 1, py - 12, container);
   text0el.innerHTML = 'Final Scoring';
+  text0el.className = 'outline';
 
   el.title = title;
   text1el.title = title;
@@ -755,7 +759,7 @@ function renderFinalScoringTile(px, py, text1, text2, text3, text4, text5, text6
 
 function drawFinalScoringTile(index) {
   var px = 0;
-  var py = 0;
+  var py = 32;
   var text1 = 'cults:';
   var text2 = '8/4/2';
   var text3 = 'network:';
@@ -1184,8 +1188,7 @@ function drawHumanUI(x, y, playerIndex) {
   ACTIONPANELH = 280;
   var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.border = '1px solid black';
-  bg.style.backgroundColor = 'white';
-  bg.style.opacity = 0.8;
+  bg.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
 
   toggleDisplay(document.getElementById('human-ui'), 'block');
   if(showingNextButtonPanel) {
@@ -1261,6 +1264,10 @@ function drawHumanUI(x, y, playerIndex) {
       } else {
         var execbutton = makeExecButton(player, px + 680, py + 240, parent, executeButtonFun, 'Execute round bonus digs.');
       }
+
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_MAP) {
       drawIcon(cx, cy, 0, player.woodcolor, parent);
@@ -1268,6 +1275,9 @@ function drawHumanUI(x, y, playerIndex) {
       makeText(px, py + 18, last_helptext, parent);
       var button = makeLinkButton(px, py + 34, 'cancel', parent);
       button.onclick = clearHumanState;
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
     else if(humanstate == HS_CULT) {
       makeText(px, py + 2, 'click on a cult track to continue', parent);
@@ -1294,7 +1304,7 @@ function drawHumanUI(x, y, playerIndex) {
     }
     else if(humanstate == HS_FAVOR_TILE) {
       makeText(px, py + 2, 'click on a favor tile on the left to continue. An example is shown below.', parent);
-      renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined, parent);
+      renderFavorTile(cx - 30, cy - 32, T_NONE, C_F, 0, '?', '', undefined, bg);
       toggleDisplay(document.getElementById('favor'), 'block');
       const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
         toggleDisplay(document.getElementById('human-ui'), 'none');
@@ -1302,7 +1312,11 @@ function drawHumanUI(x, y, playerIndex) {
     }
     else if(humanstate == HS_TOWN_TILE) {
       makeText(px, py + 2, 'click on a town tile on the left to continue. An example is shown below.', parent);
-      renderTownTile(cx - 30, cy - 32, T_NONE, 0, '?', undefined);
+      renderTownTile(cx - 30, cy - 32, T_NONE, 0, '?', undefined, bg);
+      toggleDisplay(document.getElementById('town'), 'block');
+      const buttonOK = makeButton(px + ACTIONPANELW - 110, py + ACTIONPANELH - 50, 'OK', parent, () => {
+        toggleDisplay(document.getElementById('human-ui'), 'none');
+      }, 'OK');
     }
   }
 
