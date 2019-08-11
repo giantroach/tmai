@@ -6,6 +6,14 @@ body * {
     white-space: nowrap;
 }
 
+.outline {
+    text-shadow:
+        1px 1px 0 #FFF,
+        1px -1px 0 #FFF,
+        -1px 1px 0 #FFF,
+        -1px -1px 0 #FFF;
+}
+
 #bonus,
 #favor,
 #cult,
@@ -33,7 +41,7 @@ body * {
 }
 
 #players {
-    z-index: 2;
+    z-index: 3;
 }
 
 #human-ui {
@@ -81,11 +89,6 @@ body * {
 }
 
 #help {
-    text-shadow:
-        1px 1px 0 #FFF,
-        1px -1px 0 #FFF,
-        -1px 1px 0 #FFF,
-        -1px -1px 0 #FFF;
     z-index: 2;
 }
 
