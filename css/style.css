@@ -23,7 +23,8 @@ body * {
 #cult,
 #human-ui,
 #players,
-#summary {
+#summary,
+#score {
     position: relative;
     top: 50px;
     display: none;
@@ -33,7 +34,7 @@ body * {
 #popup {
     position: relative;
     top: 50px;
-    z-index: 1;
+    z-index: 3;
 }
 
 #hud {
@@ -41,7 +42,7 @@ body * {
 }
 
 #players {
-    z-index: 3;
+    z-index: 4;
 }
 
 #human-ui {
@@ -112,9 +113,4 @@ body * {
 
 #ui svg {
     color: #333;
-}
-
-#score {
-    z-index: 1;
-    position: relative;
 }

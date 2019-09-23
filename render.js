@@ -1046,6 +1046,7 @@ function drawHud2(players, onTileClickMain) {
 
 function drawEndGameScoring(px, py) {
   var parent = hudSubElement('score');
+  toggleDisplay(parent, 'block');
 
   var bg = makeSizedDiv(px, py, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.backgroundColor = '#ffffff';
