@@ -45,10 +45,6 @@ body * {
     z-index: 4;
 }
 
-#human-ui {
-    top: 78px;
-}
-
 #human-ui > div {
     font-size: 18px;
 }
