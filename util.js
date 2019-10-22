@@ -278,6 +278,7 @@ function makeFaLinkButton(px, py, faClass, parent) {
 }
 
 function toggleDisplay(parent, display) {
+  if (!parent) { return; }
   var current = parent.style.display;
   if (current !== display) {
     parent.style.display = display;
