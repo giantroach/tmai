@@ -117,8 +117,9 @@ function showLoadGamePopup() {
   var el = els[0];
   var area = els[1];
 
-  makeText(5, 5, 'Paste the gamestate text in the field, then press Load to load the game. It only works if the text is valid. ' +
-           'This also supports logs from games from terra.snellman.net: on there press "Load full log", select all, and paste it in here.', el);
+  const textEl = makeText(5, 5, 'Paste the gamestate text in the field, then press Load to load the game. It only works if the text is valid. ' +
+                          'This also supports logs from games from terra.snellman.net: on there press "Load full log", select all, and paste it in here.', el);
+  textEl.style.whiteSpace = 'initial';
 
   area.select();
 
@@ -422,7 +423,7 @@ function drawCultTracks(px, py) {
   // px = px || 0;
   // py = py || 0;
   px = 0;
-  py = 0;
+  py = 20;
 
   function drawTrack(x, y, cult) {
     var color = getCultColor(cult);
@@ -440,7 +441,7 @@ function drawCultTracks(px, py) {
       var player = game.players[i];
       if(player.color == I || player.color == N) continue;
       var num = player.cult[cult];
-      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), -32 + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor, container);
+      drawOrb(x + 20 + Math.floor(i * (trackwidth - 40) / game.players.length), -32 + y + Math.floor(trackheight * (11 - num + 0.5) / 12), player.woodcolor, container);
     }
     for(var i = 0; i < 4; i++) {
       var x2 = x + 5 + Math.floor(5 + i * trackwidth / 5);
@@ -1028,7 +1029,7 @@ function drawHud2(players, onTileClickMain) {
   hudElement.innerHTML = '';
   var scoreProjection;
   if(state.round == 6) scoreProjection = projectEndGameScores();
-  for(var i = 0; i < players.length; i++) drawPlayerPanel(0, 0 + 145 * i, players[i], scoreProjection);
+  for(var i = 0; i < players.length; i++) drawPlayerPanel(0, 20 + 145 * i, players[i], scoreProjection);
 
   drawTilesArray(5, 0, game.roundtiles, 500, 5, onTileClickMain);
   drawTilesMap(hudSubElement('bonus'), game.bonustiles, 500, 5, onTileClickMain);
@@ -1037,7 +1038,7 @@ function drawHud2(players, onTileClickMain) {
   drawFinalScoringTile(game.finalscoring);
 
   drawCultTracks(/*840*/ 5 + game.bw * 64, 40);
-  drawHumanUI(563, 570, state.showResourcesPlayer);
+  drawHumanUI(0, 20, state.showResourcesPlayer);
   if(state.type == S_GAME_OVER) {
     autoSave(game, state, logText);
     drawEndGameScoring(ACTIONPANELX, ACTIONPANELY, 0 /*playerIndex*/);
@@ -1053,7 +1054,7 @@ function drawEndGameScoring(px, py) {
   bg.style.border = '1px solid black';
   actionSeqEl.innerHTML = '';
 
-  makeText(px + 5, py + 5, '<b>Game over</b> (detailed log is at the bottom of the web page)', parent);
+  makeText(px + 5, py + 5, '<b>Game over</b> (press log button for detailed log)', parent);
   makeText(px + 5, py + 25, 'Final scores (hover for more details):', parent);
 
   var sorted = [];
@@ -1173,20 +1174,18 @@ function makeExecButton(player, x, y, parent, executButtonFun, title) {
 
 
 var ACTIONPANELX = 0;
-var ACTIONPANELY = 0;
-var ACTIONPANELW = 0;
-var ACTIONPANELH = 0;
+var ACTIONPANELY = 20;
+var ACTIONPANELW = 820;
+var ACTIONPANELH = 280;
 
 function drawHumanUI(x, y, playerIndex) {
-  var px = 0;
-  var py = 0;
+  var px = x;
+  var py = y;
   var parent = hudSubElement('human-ui');
   var player = game.players[playerIndex];
 
-  ACTIONPANELX = px;
-  ACTIONPANELY = py;
-  ACTIONPANELW = 820;
-  ACTIONPANELH = 280;
+  // ACTIONPANELW = 820;
+  // ACTIONPANELH = 280;
   var bg = makeSizedDiv(ACTIONPANELX, ACTIONPANELY, ACTIONPANELW, ACTIONPANELH, parent);
   bg.style.border = '1px solid black';
   bg.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
@@ -1815,7 +1814,8 @@ function hideAllUIs(except) {
     'round',
     'final',
     'players',
-    'log'
+    'log',
+    'score'
   ];
   for (i = 0; i < ids.length; i += 1) {
     if (except !== ids[i]) {
@@ -1840,8 +1840,9 @@ function drawSaveLoadUI(onlyload) {
       var el = els[0];
       var area = els[1];
 
-      makeText(5, 5, 'Copy all the text below, and save it in a text file to keep a copy of the game state. It can be loaded again at any time.' +
-          ' The state can also be shared with others. The final "log:" section is optional.', el);
+      const textEl = makeText(5, 5, 'Copy all the text below, and save it in a text file to keep a copy of the game state. It can be loaded again at any time.' +
+                              ' The state can also be shared with others. The final "log:" section is optional.', el);
+      textEl.style.whiteSpace = 'initial';
 
       area.value = serializeGameState(saveGameState(game, state, logText));
       area.select();
@@ -1861,6 +1862,7 @@ function drawSaveLoadUI(onlyload) {
       var el = makeSizedDiv(50, 50, 400, 150, document.body);
       el.style.backgroundColor = 'white';
       el.style.border = '1px solid black';
+      el.style.zIndex = 10;
 
       //makeText(5, 5, 'Really remove current game and start a new one?', el);
       makeCenteredText('Really remove current game and start a new one?', 400, 50 + (350 / 2), 70, el);
@@ -1928,7 +1930,7 @@ function drawSaveLoadUI(onlyload) {
     // UI
     button = makeFaLinkButton(prevX += 50, 0, 'list-alt', parent);
     button.onclick = function() {
-      // hideAllUIs('human-ui');
+      hideAllUIs('human-ui');
       toggleDisplay(document.getElementById('human-ui'), 'block');
       const score = document.getElementById('score');
       if (score) {
