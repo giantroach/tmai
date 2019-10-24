@@ -26,7 +26,7 @@ body * {
 #summary,
 #score {
     position: relative;
-    top: 50px;
+    top: 54px;
     display: none;
     z-index: 3;
 }
@@ -43,10 +43,6 @@ body * {
 
 #players {
     z-index: 4;
-}
-
-#human-ui {
-    top: 78px;
 }
 
 #human-ui > div {
@@ -95,7 +91,7 @@ body * {
 
 #log {
     width: 820px;
-    height: 320px;
+    height: 460px;
     overflow-y: auto;
     border: 1px solid darkgray;
     z-index: 0;
