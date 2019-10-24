@@ -4,8 +4,9 @@ A customized version of TMAI that has following changes.
 
 - Auto save feature (Optional)
 - Some minor bug fix and improvements
-- A little Mobile friendly UI
+- Better UI for mobile user.
+- Installable & works offline as PWA
 
-![スクリーンショット 2019-08-04 13 46 34](https://user-images.githubusercontent.com/5415392/62419581-60778d80-b6be-11e9-9608-20b1fb8191eb.png)
+![Preview Image](https://user-images.githubusercontent.com/5415392/67503840-4e0c5f00-f6c3-11e9-8712-8294f2594935.png)
 
-This is available on [GitHub Pages](https://giantroach.github.io/tmai/)
+You can try this on [GitHub Pages](https://giantroach.github.io/tmai/)
