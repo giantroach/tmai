@@ -1864,8 +1864,7 @@ function drawSaveLoadUI(onlyload) {
       el.style.border = '1px solid black';
       el.style.zIndex = 10;
 
-      //makeText(5, 5, 'Really remove current game and start a new one?', el);
-      makeCenteredText('Really remove current game and start a new one?', 400, 50 + (350 / 2), 70, el);
+      makeCenteredText('Really lose all progress and start a new game?', 400, 50 + (350 / 2), 70, el);
 
       var button2 = makeButton(70, 60, 'Yes', el, function() {
         document.body.removeChild(el);
