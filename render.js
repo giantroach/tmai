@@ -113,7 +113,7 @@ function showGreyDialogAtMouse(text, e) {
 }
 
 function showLoadGamePopup() {
-  var els = makePopupUpTextArea();
+  var els = makePopupTextArea();
   var el = els[0];
   var area = els[1];
 
@@ -134,6 +134,67 @@ function showLoadGamePopup() {
   }, 'Load');
 
   var button3 = makeButton(425, 450, 'Cancel', el, function() {
+    popupElement.removeChild(el);
+  }, 'Cancel');
+};
+
+
+function showNetworkGamePopup(fallback) {
+  const el = makePopupGeneral();
+
+  const textEl = makeText(10, 10, 'Paste REST url to access save data.', el);
+  textEl.style.whiteSpace = 'initial';
+
+  const label1 = makeElement(el, 'label');
+  label1.innerText = 'URL:';
+  label1.style.position = 'absolute';
+  label1.style.top = 40;
+  label1.style.left = 20;
+  const input1 = makeElement(el, 'input');
+  input1.style.position = 'absolute';
+  input1.style.top = 60;
+  input1.style.left = 20;
+  input1.style.width = 400;
+  const url = localStorage['network.url'];
+  if (url) { input1.value = url; }
+
+  const label2 = makeElement(el, 'label');
+  label2.innerText = 'Authorization (Optional):';
+  label2.style.position = 'absolute';
+  label2.style.top = 100;
+  label2.style.left = 20;
+  const input2 = makeElement(el, 'input');
+  input2.style.position = 'absolute';
+  input2.style.top = 120;
+  input2.style.left = 20;
+  input2.style.width = 400;
+  const auth = localStorage['network.auth'];
+  if (auth) { input2.value = auth; }
+
+  input1.select();
+
+  const button1 = makeButton(315, 450, 'Start', el, function() {
+    network.load(input1.value, input2.value).then((data) => {
+      localStorage.online = true;
+      localStorage['network.url'] = input1.value;
+      localStorage['network.auth'] = input2.value;
+
+      if (data) {
+        let game = deSerializeGameState(data);
+        if (game) {
+          popupElement.removeChild(el);
+          loadGameStateHard(game);
+          if (!game.logText) addLog('<br/>Loaded a game without log<br/>');
+          return;
+        }
+      }
+
+      // new game
+      fallback();
+    });
+  }, 'Load');
+
+  const button2 = makeButton(425, 450, 'Cancel', el, function() {
     popupElement.removeChild(el);
   }, 'Cancel');
 };
@@ -1760,7 +1821,7 @@ function makeButton(x, y, label, parentEl, clickfun, tooltip, parent) {
   return [bg, labelDiv, button];
 }
 
-function makePopupUpTextArea() {
+function makePopupTextArea() {
   var el = makeSizedDiv(50, 50, 540, 500, popupElement);
   el.style.backgroundColor = 'white';
   el.style.border = '1px solid black';
@@ -1772,6 +1833,16 @@ function makePopupUpTextArea() {
   area.style.width = 500;
   area.style.height = 300;
   return [el, area];
+}
+
+function makePopupGeneral() {
+  var el = makeSizedDiv(50, 50, 540, 500, popupElement);
+  el.style.backgroundColor = 'white';
+  el.style.border = '1px solid black';
+  el.style.display = 'flex';
+  el.style.flexDirection = 'column';
+  el.style.padding = '5px';
+  return el;
 }
 
 
@@ -1836,7 +1907,7 @@ function drawSaveLoadUI(onlyload) {
     button = makeFaLinkButton(prevX, 0, 'save', parent);
     button.onclick = function() {
       if(state.type == S_PRE) return;
-      var els = makePopupUpTextArea();
+      var els = makePopupTextArea();
       var el = els[0];
       var area = els[1];
 

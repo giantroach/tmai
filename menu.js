@@ -170,7 +170,7 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     for(var i = 0; i < factionDropDowns.length; i++) factionDropDowns[i].selectedIndex = 0;
   }
 
-  function buttonFun(fun) {
+  function buttonFun() {
     var params = {};
     params.numplayers = 5 - numPlayerEl.selectedIndex;
     preferences.numplayersdropdown = numPlayerEl.selectedIndex;
@@ -229,18 +229,20 @@ function renderPreScreen(px, py, standardButtonFun, randomButtonFun, beginnerBut
     preferences.worldmapdropdown = worldMapEl.selectedIndex;
     preferences.finalscoringdropdown = thereIsOnlyOneFinalScoring ? 0 : finalScoringDropdown.selectedIndex;
 
-    fun(params);
+    if (gameTypeDropDown.selectedIndex == 0) standardButtonFun(params);
+    if (gameTypeDropDown.selectedIndex == 1) randomButtonFun(params);
+    if (gameTypeDropDown.selectedIndex == 2) beginnerButtonFun(params);
+    if (gameTypeDropDown.selectedIndex == 3) quickButtonFun(params);
   }
 
   ppy = py + 170 + 17;
-  makeButton(px, ppy, 'Start', parent, bind(buttonFun, function(params) {
-    if(gameTypeDropDown.selectedIndex == 0) standardButtonFun(params);
-    if(gameTypeDropDown.selectedIndex == 1) randomButtonFun(params);
-    if(gameTypeDropDown.selectedIndex == 2) beginnerButtonFun(params);
-    if(gameTypeDropDown.selectedIndex == 3) quickButtonFun(params);
-  }), 'Start a new game');
+  makeButton(px, ppy, 'Start', parent, bind(buttonFun, () => {}), 'Start a new game');
 
   makeButton(px + 120, ppy, 'Load', parent, showLoadGamePopup);
+
+  makeButton(px + 240, ppy, 'Online', parent, () => {
+    showNetworkGamePopup(buttonFun);
+  });
 
   const docEl = makeText(px, py + 480 + 17, '<h3>Documentation:</h3>', parent);
   docEl.id = 'doc';
@@ -386,6 +388,7 @@ var preferences = {
   fireiceerrata: true,
   roundtilepromo2015: true,
   autosave: false,
+  online: false,
 };
 
 function assignPreferenceToDropdown(dropdown, value) {
@@ -427,27 +430,28 @@ function getLocalStorage() {
   preferences.gametypedropdown = localStorage['gametypedropdown'];
   preferences.playertypedropdown = localStorage['playertypedropdown'];
   preferences.worldmapdropdown = localStorage['worldmapdropdown'];
-  if(preferences.worldmapdropdown == undefined) preferences.worldmapdropdown = 4; //default to Fire&Ice World map
+  if (preferences.worldmapdropdown == undefined) preferences.worldmapdropdown = 4; //default to Fire&Ice World map
   preferences.finalscoringdropdown = localStorage['finalscoringdropdown'];
   preferences.factiondropdown[0] = localStorage['factiondropdown0'];
   preferences.factiondropdown[1] = localStorage['factiondropdown1'];
   preferences.factiondropdown[2] = localStorage['factiondropdown2'];
   preferences.factiondropdown[3] = localStorage['factiondropdown3'];
   preferences.factiondropdown[4] = localStorage['factiondropdown4'];
-  if(localStorage['presetroundtiles']) preferences.presetroundtiles = JSON.parse(localStorage['presetroundtiles']);
-  if(localStorage['presetbonustiles']) preferences.presetbonustiles = JSON.parse(localStorage['presetbonustiles']);
+  if (localStorage['presetroundtiles']) preferences.presetroundtiles = JSON.parse(localStorage['presetroundtiles']);
+  if (localStorage['presetbonustiles']) preferences.presetbonustiles = JSON.parse(localStorage['presetbonustiles']);
   preferences.numplayersdropdown = localStorage['numplayersdropdown'];
-  if(preferences.numplayersdropdown == undefined) preferences.numplayersdropdown = 0; //LOU13 default 4 players=1, 5 players=0
+  if (preferences.numplayersdropdown == undefined) preferences.numplayersdropdown = 0; //LOU13 default 4 players=1, 5 players=0
   preferences.startplayerdropdown = localStorage['startplayerdropdown'];
-  if(localStorage['newcultistsrule'] != undefined) preferences.newcultistsrule = localStorage['newcultistsrule'] == 'true';
-  if(localStorage['towntilepromo2013'] != undefined) preferences.towntilepromo2013 = localStorage['towntilepromo2013'] == 'true';
-  if(localStorage['bonustilepromo2013'] != undefined) preferences.bonustilepromo2013 = localStorage['bonustilepromo2013'] == 'true';
-  if(localStorage['fireice'] != undefined) preferences.fireice = localStorage['fireice'] == 'true';
-  if(localStorage['turnorder'] != undefined) preferences.turnorder = localStorage['turnorder'] == 'true';
-  if(localStorage['aiAlgorithm'] != undefined) preferences.aiAlgorithm = localStorage['aiAlgorithm'];
-  if(localStorage['fireiceerrata'] != undefined) preferences.fireiceerrata = localStorage['fireiceerrata'] == 'true';
-  if(localStorage['roundtilepromo2015'] != undefined) preferences.roundtilepromo2015 = localStorage['roundtilepromo2015'] == 'true';
-  if(localStorage['autosave'] != undefined) preferences.autosave = localStorage['autosave'] == 'true';
+  if (localStorage['newcultistsrule'] != undefined) preferences.newcultistsrule = localStorage['newcultistsrule'] == 'true';
+  if (localStorage['towntilepromo2013'] != undefined) preferences.towntilepromo2013 = localStorage['towntilepromo2013'] == 'true';
+  if (localStorage['bonustilepromo2013'] != undefined) preferences.bonustilepromo2013 = localStorage['bonustilepromo2013'] == 'true';
+  if (localStorage['fireice'] != undefined) preferences.fireice = localStorage['fireice'] == 'true';
+  if (localStorage['turnorder'] != undefined) preferences.turnorder = localStorage['turnorder'] == 'true';
+  if (localStorage['aiAlgorithm'] != undefined) preferences.aiAlgorithm = localStorage['aiAlgorithm'];
+  if (localStorage['fireiceerrata'] != undefined) preferences.fireiceerrata = localStorage['fireiceerrata'] == 'true';
+  if (localStorage['roundtilepromo2015'] != undefined) preferences.roundtilepromo2015 = localStorage['roundtilepromo2015'] == 'true';
+  if (localStorage['autosave'] != undefined) preferences.autosave = localStorage['autosave'] == 'true';
+  if (localStorage['online'] != undefined) preferences.online = localStorage['online'] == 'true';
 }
 
 window.onbeforeunload = setLocalStorage;

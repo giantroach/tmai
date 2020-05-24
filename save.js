@@ -71,10 +71,37 @@ function loadGameStateHard(game) {
 
 //Auto save and load
 function autoSave(game, state, logText) {
+  if (localStorage.online && localStorage['network.url']) {
+    network.save(
+      localStorage['network.url'],
+      localStorage['network.auth'],
+      serializeGameState(saveGameState(game, state, logText))
+    );
+  }
+
+  // shouldn't this check the preferences??
   localStorage['autoSaveData'] = serializeGameState(saveGameState(game, state, logText));
 }
 
 function autoLoad() {
+  if (localStorage.online && localStorage['network.url']) {
+    network.load(localStorage['network.url'], localStorage['network.auth']).then((data) => {
+      const game = deSerializeGameState(data);
+      if (game) {
+        loadGameStateHard(game);
+        if (!savedGame.logText) addLog('<br/>Loaded a game without log<br/>');
+        return;
+      }
+      throw '';
+
+    }).catch(() => {
+      // bring back to the menu
+      renderPreScreen(0, 135, startGameButtonFun, startRandomGameButtonFun, startBeginnerGameButtonFun, startQuickGameButtonFun);
+    });
+
+    return true;
+  }
+
   if(localStorage['autoSaveData']) {
     var game = deSerializeGameState(localStorage['autoSaveData']);
     if(game) {
